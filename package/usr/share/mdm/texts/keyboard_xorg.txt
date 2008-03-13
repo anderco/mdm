@@ -1,0 +1,12 @@
+
+# -------------------- Keyboard Section  --------------------- '
+
+Section "InputDevice"
+	Identifier  "Generic Keyboard"
+	Driver      "keyboard"
+	Option      "CoreKeyboard"
+	Option      "XkbRules"      "KBD_RULES"
+	Option      "XkbModel"      "KBD_MODEL"
+	Option      "XkbLayout"     "KBD_LAYOUT"
+EndSection
+    

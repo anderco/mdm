@@ -1,0 +1,455 @@
+#!/bin/bash
+#
+# Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+ 
+ 
+#**********************************
+#
+#  Script Version: 2.0.1
+#                  29/01/2008
+#  Dependencies:
+#       mdm-path.inc
+#       mdm-debug.inc
+#       mdm-hardware.inc
+#       mdm-util.inc
+#       mdm-links.inc
+#       mdm-images.inc
+#       mdm-execute.inc
+#       XephyrLoader
+#       mdm.conf
+ 
+ # versão do script
+ VERSION=2.0.1
+ 
+ # diretório que contém os arquivos inclusos
+ INCLUDE=/usr/share/mdm/include
+ 
+ export TEXTDOMAINDIR=/usr/share/locale
+ export TEXTDOMAIN=multiseat-xephyr
+
+ source ${INCLUDE}/mdm-debug.inc
+ source ${INCLUDE}/mdm-path.inc
+ source ${INCLUDE}/mdm-hardware.inc
+ source ${INCLUDE}/mdm-images.inc
+  
+ source ${CONFIG_FILE}
+ source ${INCLUDE}/mdm-util.inc
+ source ${INCLUDE}/mdm-links.inc
+ source ${INCLUDE}/mdm-execute.inc
+
+
+# 
+# Esta funcão verifica se o usuário tem privilégios de root. Caso não tenha,
+# aborta o script
+#
+# Parâmetros:   nenhum
+
+function NeedRoot()
+{
+    # verifica se o usuário é root
+    if [[ `IsRoot` != "1" ]]; then
+        echo $"Somente usuário root pode executar o mdm!"
+        exit 1
+    fi
+} # NeedRoot
+
+#
+# funcão responsável por inicializar uma cabeca apenas
+#
+# Parâmetros:   nenhum
+
+function OneHead()
+{
+    case ${DISPLAY_MANAGER} in
+        gdm)
+            WriteDebug $"Servidor local, gdm, uma cabeca."
+
+            # acrescenta servidor padrão do gdm
+            ${GDMDynamic} "-a 0=StandardHandled"
+
+            # executa o servidor
+            ${GDMDynamic} "-r 0"
+            ;;
+        remote)
+            WriteDebug $"Servidor remoto, uma cabeca. Query: ${QUERY_COMMAND}"
+                
+            # chama o X
+            ${X} -query ${QUERY_COMMAND} \
+                 -config ${XORG_MDM} 2> ${LOG_DIR}/X.log &
+                
+            # pega o PID do X
+            local PID=$!
+                
+            # guarda o PID do X
+            echo ${PID} > ${PIDS}/X.pid
+                
+            # aguarda até o processo do X terminar
+            wait ${PID}
+                
+            # exclui o PID criado anteriormente
+            rm -f ${PIDS}/X.pid
+            ;;
+        *)
+            WriteDebug "OneHead(): Gerenciador ${DISPLAY_MANAGER} inválido."
+            exit 2
+            ;;
+    esac
+        
+} # OneHead
+
+#
+# funcão responsável por carregar o setar cada uma das cabecas
+#
+# Parâmetros:   número de cabecas a carregar
+
+function SetHeads()
+{
+    # número de cabecas a setar
+    local HEADS=${1}
+    
+    # número da cabeca sendo conectada
+    local HEAD
+    
+    # executa cada uma cas cabecas
+    for (( HEAD=1; HEAD <= HEADS; HEAD++ )); do
+        # display para ser associado com o terminal
+        export DISPLAY=:0.$(( HEAD - 1 ))
+                
+        # abre o terminal
+        exec ${XephyrLoader} open ${HEAD} &
+        
+        # pega o PID
+        local PID=$!
+        
+        # guarda o PID
+        echo ${PID} > ${PIDS}/XephyrLoader_${HEAD}.pid
+    
+    done
+
+} # SetHeads
+
+#
+# funcão responsável por inicializar mais de uma cabeca
+#
+# Parâmetros:   número de cabecas a serem setadas
+
+function MultiHead()
+{
+
+    # número de cabecas a setar
+    local HEADS=${1}
+
+    # analisa o tipo de conexão
+    case ${DISPLAY_MANAGER} in
+        gdm)
+            WriteDebug $"Conexão local, multiterminal, GDM"
+            
+            # adiciona o servidor padrão
+            ${GDMDynamic} "-a 0=StandardNotHandled"
+            
+            # executa o servidor
+            ${GDMDynamic} "-r 0"
+            
+            # aguarda o servidor carregar
+            sleep 4
+            
+            # carrega as cabecas
+            SetHeads ${HEADS}
+            ;;
+        remote)
+            WriteDebug $"Conexão remota, multiterminal. Query: ${QUERY_COMMAND}"
+            
+            # inicia o X 
+            ${X} -br \
+                 -noreset \
+                 -dpi 92 \
+                 -config ${XORG_MDM} 2> ${LOG_DIR}/X.log &
+            
+            # pega o PID do X
+            local PID=$!
+            
+            # salva o pid
+            echo ${PID} > ${PIDS}/X.pid
+            
+            # aguarda o servidor X terminar de carregar
+            sleep 6
+            
+            # gera um Xauthority
+            xauth -f ${XAUTH_FILE} generate :0
+            
+            # seta novo Xauthority
+            export XAUTHORITY=${XAUTH_FILE}
+            
+            # carrega as cabecas
+            SetHeads ${HEADS}
+            ;;
+        *)
+            WriteDebug "MultiHead(): Gerenciador ${DISPLAY_MANAGER} inválido."
+            exit 2
+            ;;
+    esac
+} # MultiHead
+
+#
+# funcão que executa a inicializacão do sistema
+#
+# Parâmetros:   número de cabecas a serem setadas
+
+function ExecStart()
+{
+    # verifica se é root
+    NeedRoot
+    
+    # arquivo de PID do mdm
+    local PID_FILE=${PIDS}/mdm.pid
+    
+    # verifica se o mdm está em execucão
+    if [[ -f ${PID_FILE} ]]; then
+        echo -e $"Arquivo de PID encontrado. mdm já está rodando?"
+        echo -e $"Verifique ${PID_FILE}"
+        exit 2
+    fi
+      
+    # número de cabecas a abrir
+    local HEADS=${1}
+    
+    # arquivos a serem excluidos      
+    local EXCLUDE
+     
+    # exclui possíveis arquivos de lock de sessões anteriores
+    for EXCLUDE in `ls ${LOCK_DIR} | grep "^mdm"`; do
+        rm -f ${LOCK_DIR}/${EXCLUDE}
+    done
+            
+    # exclui possíveis arquivos de PIDs de sessões anteriores
+    for EXCLUDE in `ls ${PIDS}`; do
+        rm -f ${PIDS}/${EXCLUDE}
+    done
+    
+    # uma só cabeca?        
+    if [[ ${HEADS} == 1 ]]; then
+        OneHead
+    else
+        MultiHead ${HEADS}
+    fi
+ 
+} # ExecStart
+
+#
+# esta funcao lê um PID de dentro de um arquivo, termina o processo e exclui o 
+# arquivo.
+#
+# Parametros:   nome do arquivo que contém o PID. Pode conter curingas.
+#
+
+function StopPID()
+{
+    local FILES=${1}
+    local STOP
+    
+    for STOP in `ls ${PIDS}/${FILES}`; do
+        local PID=`cat ${PIDS}/${STOP}`
+        # verifica se conseguiu terminar o processo
+        if [[ ! `kill -TERM ${PID}` ]]; then
+            WriteDebug "${STOP%%_*} não parou!"
+        fi
+        rm -f ${PIDS}/${STOP}
+    done
+
+} # StopPID
+
+#
+# esta funcão para a execucão de multiterminais inicializados pelo mdm
+#
+# Parâmetros:   nenhum
+
+function ExecStop()
+{
+
+    local STOP
+   
+    # mata XephyrLoader
+    StopPID "XephyrLoader_*.pid"
+
+    # mata Xephyr
+    StopPID "Xephyr_*.pid"
+        
+    # mata o X
+    StopPID "X.pid"
+    
+} # ExecStop
+
+#
+# esta funcão forca o sistema a parar
+
+function ExecForceStop() 
+{
+
+    local STOP
+        
+    # mata XephyrLoader
+    for STOP in `pidof ${XephyrLoader}`; do 
+        kill -TERM ${STOP}
+    done
+    
+    # mata gdmDynamic
+    for STOP in `pidof ${GDMDynamic}`; do
+        kill -TERM ${STOP}
+    done
+    
+    # mata Xephyr
+    for STOP in `pidof ${Xephyr}`; do
+        kill -TERM ${STOP}
+    done
+   
+    # mata X
+    for STOP in `pidof ${X}`; do
+        kill -TERM ${STOP}
+    done
+
+    # exclui os arquivos de PID
+    for STOP in `ls ${PIDS}/*.pid`; do
+        rm -f ${PIDS}/${STOP}
+    done
+    
+} # ExecForceStop
+
+#
+# Funcão principal
+#
+# Parâmetros:   os da linha de comando
+
+function Main()
+{
+    # servico a executar
+    local JOB=${1}
+    
+    # Cria os diretórios necessários
+    InitSystem
+    
+    # número de cabecas
+    local HEADS=`NumHeads`
+    
+    # verifica se o display manager está definido
+    if [[ -z "${DISPLAY_MANAGER}" ]]; then
+        DISPLAY_MANAGER="gdm"
+    fi
+    
+    # verifica se o servidor remoto está definido
+    if [[ -z "${QUERY_COMMAND}" ]]; then
+        QUERY_COMMAND="xdmcpserver"
+    fi
+    
+    # verifica os parâmetros de execão
+    case ${JOB} in
+        # mostra informacões sobre teclados, mouses e placas de video
+        info)
+            # mostra o copyright
+            MDMCopyright
+
+            # obtém lista de hardware detectados
+            local KEYB=`Keyboards | wc -l`
+            local MICE=`Mice | wc -l`
+            local VIDEO=`VideoCards driver | wc -l`
+            local HEADS=`NumHeads`
+            
+            echo -e $"Teclado(s):\t${KEYB}"
+            echo -e $"Mouse(s):\t${MICE}"
+            echo -e $"Video(s):\t${VIDEO}"
+            echo
+            if [[ ${HEADS} -eq 1 ]]; then
+                echo -e $"Terminal com uma única cabeca."
+            else
+                echo -e $"Multiterminal com ${HEADS} cabecas."
+            fi
+            ;;
+        # inicializa o multiterminal
+        start)
+            # mostra o copyright
+            MDMCopyright
+            
+            # inicializa o terminal
+            ExecStart ${HEADS}
+            ;; 
+        # para o sistema, usando os arquivos de PID
+        stop)
+            ExecStop
+            ;;
+        # forca o sistema a parar, usando o PIDOF para localizar os processos
+        force)
+            ExecForceStop
+            ;;
+        # mata uma cabeca específica e reconfigura novamente
+        reconfig)
+            # terminal a ser reconfigurado
+            local TERMINAL=${2}
+            
+            if [[ -z "${TERMINAL}" ]]; then
+                echo $"Informe o número da cabeca para reconfigurar."
+                exit 1
+            fi
+            
+            # arquivo de PID da cabeca a ser reconfigurada
+            local XEPHYR_TO_KILL="XephyrLoader_${TERMINAL}.pid"
+            
+            # verifica se a cabeca foi carregada
+            if [[ ! -f ${PIDS}/${XEPHYR_TO_KILL} ]]; then
+                echo $"Cabeca inválida ou não encontrada: ${TERMINAL}"
+                exit 1
+            fi
+            
+            # para o XephyrLoader
+            StopPID "${XEPHYR_TO_KILL}"
+            
+            # para o Xephyr
+            StopPID "Xephyr_:0.$(( TERMINAL - 1 )).pid"
+            
+            # remove teclado e mouse associado ao terminal específico
+            rm -f ${LINK_DIR}/mdm{Kbd,Mouse}${TERMINAL}
+            
+            # reconfigura o terminal
+            export DISPLAY=:0.$(( TERMINAL - 1 ))
+                
+            # abre o terminal
+            ${XephyrLoader} open ${TERMINAL} &
+        
+            # pega o PID
+            local PID=$!
+        
+            # guarda o PID
+            echo ${PID} > ${PIDS}/XephyrLoader_${TERMINAL}.pid
+            ;;
+        *)
+            # mostra o copyright
+            MDMCopyright
+            
+            # informa o usuário sobre o modo de uso
+            echo -e $"Use:"
+            echo -e $"\tmdm start|stop|force|reconfig <head>|info"
+            ;;
+    esac
+    echo
+}
+ 
+ 
+# Ponto de entrada do script
+
+    Main ${1}
+    
+    exit 0

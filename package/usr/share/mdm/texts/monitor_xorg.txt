@@ -1,0 +1,9 @@
+
+#---------------------- MONITOR Section -------------------------------
+
+Section "Monitor"
+	Identifier  "Monitor ID"
+	HORIZ_SYNC
+	VERT_REFRESH
+	Option      "DPMS"
+EndSection

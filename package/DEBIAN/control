@@ -1,0 +1,8 @@
+Package: multiseat-xephyr 
+Version: 2.0.1
+Section: universe/x11 
+Architecture: i386
+Priority: optional
+Depends: bash, sed, xserver-xorg, xfonts-base, xserver-xephyr (>=1.1.1), xloadimage (>=4.1), imagemagick (>=6.2), gdm, bc, discover (>=2.1)
+Maintainer: multiseat-xephyr (multiterminal@c3sl.ufpr.br)
+Description: This software controls multiseat systems. It was developed by C3SL team at UFPR (http://wiki.c3sl.ufpr.br/multiseat/).

@@ -1,0 +1,10 @@
+** History mdm-links.inc
+**
+** This file contains changes in mdm-links file
+**
+** mdm-links is a include file. It contains code to set links to physical
+** keyboard and mouse for every terminal in a multiseat.
+**
+
+2008-02-21  Loirto A Santos
+    * Start to write history file

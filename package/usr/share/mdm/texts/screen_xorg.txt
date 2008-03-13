@@ -1,0 +1,18 @@
+
+# -------------------- SCREENS --------------------- 
+    
+Section "Screen"	   
+	Identifier  "Screen ID"
+	Device      "Card ID"
+	Monitor     "Monitor ID"
+	DefaultDepth    DEFAULT_DEPTH
+	SubSection "Display"
+		   Depth       16
+		   Modes       SCREEN_MODES
+	EndSubSection
+	SubSection "Display"
+		   Depth       24
+		   Modes       SCREEN_MODES
+	EndSubSection
+EndSection	
+
