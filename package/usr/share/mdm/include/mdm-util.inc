@@ -92,6 +92,11 @@ function InitSystem()
         DEBUG_ENABLED=0
     fi
     
+    # inicializa o modo de criacao de links
+    if [[ -z "${LINK_CREATION_MODE}" ]]; then
+        LINK_MODE="once"
+    fi
+    
     # inicializa o gerenciador de login
     if [[ -z "${DISPLAY_MANAGER}" ]]; then
         DISPLAY_MANAGER="gdm"
