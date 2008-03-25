@@ -1,0 +1,11 @@
+Description: The Multiseat package configures a multiseat system, containing 
+two or more videocards, keyboards and mice, allowing two or more users to use 
+the system at the same time.
+
+Dependencies: Multiseat depends on a patched Xephyr, which is a X client that 
+runs as the X server to other aplications, allowing the system to work with 
+more than one user locally logged in.
+
+More information about installing and configuring the system can be found in:
+
+http://wiki.c3sl.ufpr.br/multiseat/ 
