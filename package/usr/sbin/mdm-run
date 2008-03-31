@@ -132,13 +132,13 @@ function SetHeads()
         export DISPLAY=:0.$(( HEAD - 1 ))
                 
         # abre o terminal
-        exec ${XephyrLoader} open ${HEAD} &
+        ${MDMService} ${HEAD} &
         
         # pega o PID
         local PID=$!
         
         # guarda o PID
-        echo ${PID} > ${PIDS}/XephyrLoader_${HEAD}.pid
+        echo ${PID} > ${PIDS}/mdm-service_${HEAD}.pid
     
     done
 
@@ -284,8 +284,8 @@ function ExecStop()
 
     local STOP
    
-    # mata XephyrLoader
-    StopPID "XephyrLoader_*.pid"
+    # mata mdm-service
+    StopPID "mdm-service_*.pid"
 
     # mata Xephyr
     StopPID "Xephyr_*.pid"
@@ -303,8 +303,8 @@ function ExecForceStop()
 
     local STOP
         
-    # mata XephyrLoader
-    for STOP in `pidof ${XephyrLoader}`; do 
+    # mata mdm-service
+    for STOP in `pidof ${MDMService}`; do 
         kill -TERM ${STOP}
     done
     
@@ -406,7 +406,7 @@ function Main()
             fi
             
             # arquivo de PID da cabeca a ser reconfigurada
-            local XEPHYR_TO_KILL="XephyrLoader_${TERMINAL}.pid"
+            local XEPHYR_TO_KILL="mdm-service_${TERMINAL}.pid"
             
             # verifica se a cabeca foi carregada
             if [[ ! -f ${PIDS}/${XEPHYR_TO_KILL} ]]; then
@@ -414,7 +414,7 @@ function Main()
                 exit 1
             fi
             
-            # para o XephyrLoader
+            # para o mdm-service
             StopPID "${XEPHYR_TO_KILL}"
             
             # para o Xephyr
@@ -427,13 +427,13 @@ function Main()
             export DISPLAY=:0.$(( TERMINAL - 1 ))
                 
             # abre o terminal
-            ${XephyrLoader} open ${TERMINAL} &
+            ${MDMService} open ${TERMINAL} &
         
             # pega o PID
             local PID=$!
         
             # guarda o PID
-            echo ${PID} > ${PIDS}/XephyrLoader_${TERMINAL}.pid
+            echo ${PID} > ${PIDS}/mdm-service_${TERMINAL}.pid
             ;;
         *)
             # mostra o copyright

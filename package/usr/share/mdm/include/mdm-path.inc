@@ -51,8 +51,9 @@ Convert=`which convert`
 Xephyr=`which Xephyr`
 ShowImage=`which xsetbg`
 X=`which X`
-ReadDevices=${BIN_DIR}/read_devices
-XephyrLoader=${BIN_DIR}/XephyrLoader
+ReadDevices=${BIN_DIR}/mdm-read-devices
+XephyrLoader=${BIN_DIR}/mdm-xephyr-loader
+MDMService=${BIN_DIR}/mdm-service
 
 #
 # Esta função verifica a existência dos diretórios do sistema. Caso os
