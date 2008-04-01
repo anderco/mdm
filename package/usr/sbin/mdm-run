@@ -231,11 +231,14 @@ function ExecStart()
     
     # arquivos a serem excluidos      
     local EXCLUDE
-     
-    # exclui possíveis arquivos de lock de sessões anteriores
-    for EXCLUDE in `ls ${LOCK_DIR} | grep "^mdm"`; do
-        rm -f ${LOCK_DIR}/${EXCLUDE}
-    done
+    
+    # deve criar o link sempre?
+    if [[ $LINK_CREATION_MODE="always" ]]; then
+        # exclui possíveis arquivos de lock e link de sessões anteriores
+        for EXCLUDE in `ls ${LINK_DIR} | grep "^mdm"`; do
+            rm -f ${LINK_DIR}/${EXCLUDE}
+        done
+    fi
             
     # exclui possíveis arquivos de PIDs de sessões anteriores
     for EXCLUDE in `ls ${PIDS}`; do
