@@ -233,7 +233,7 @@ function ExecStart()
     local EXCLUDE
     
     # deve criar o link sempre?
-    if [[ $LINK_CREATION_MODE="always" ]]; then
+    if [[ ${LINK_CREATION_MODE} == "always" ]]; then
         # exclui possíveis arquivos de lock e link de sessões anteriores
         for EXCLUDE in `ls ${LINK_DIR} | grep "^mdm"`; do
             rm -f ${LINK_DIR}/${EXCLUDE}

@@ -8,11 +8,11 @@ Section "Screen"
 	DefaultDepth    DEFAULT_DEPTH
 	SubSection "Display"
 		   Depth       16
-		   Modes       SCREEN_MODES
+		   Modes       "SCREEN_MODES"
 	EndSubSection
 	SubSection "Display"
 		   Depth       24
-		   Modes       SCREEN_MODES
+		   Modes       "SCREEN_MODES"
 	EndSubSection
 EndSection	
 
