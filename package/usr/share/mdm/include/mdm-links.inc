@@ -42,6 +42,20 @@ function KeyboardLink()
         CREATED=0
     fi
     
+    # verifica o modo de criacao dos links
+    case ${LINK_CREATION_MODE} in
+        always)
+            # ignora o link que já está criado
+            CREATED=0
+            ;;
+        once)
+            # se o link já está criado, encerra
+            if [[ ${CREATED} ]]; then
+                return
+            fi
+            ;;
+    esac
+    
     # pede para pressionar a fn
     SetImage keyboard ${TERMINAL}
     
@@ -128,6 +142,20 @@ function MouseLink()
         CREATED=0
     fi
     
+    # verifica o modo de criacao dos links
+    case ${LINK_CREATION_MODE} in
+        always)
+            # ignora o link que já está criado
+            CREATED=0
+            ;;
+        once)
+            # se o link já está criado, encerra
+            if [[ ${CREATED} ]]; then
+                return
+            fi
+            ;;
+    esac
+
     # repete até conseguir um mouse para associar a este terminal
     while (( ! ${CREATED} )); do
     

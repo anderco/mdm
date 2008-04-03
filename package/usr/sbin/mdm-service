@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -17,60 +17,48 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
-
-#  A funcão deste script é carregar o Xephyr. Ele pode ser chamado
-#  para fazer uma de duas funcões:
-#       * chamar diretamente o script que chama o Xephyr
-#       * chamar indiretamente o script que chama o Xephyr, através da
-#         funcão OpenTerminal. Este recurso é usado pq é preciso manter
-#         um script rodando em segundo plano para cada uma das cabecas
-#         do terminal. Para maiores informacões, veja a funcão OpenTerminal
-#         no arquivo mdm-execute.inc
-#
-
+ 
+ 
 #**********************************
-#  Script Version: 1.0.1
-#                  27/02/2008
 #
+#  Script Version: 1.0.0
+#                  24/03/2008
 #  Dependencies:
 #       mdm-path.inc
 #       mdm-debug.inc
+#       mdm-hardware.inc
+#       mdm-links.inc
 #       mdm-images.inc
 #       mdm-execute.inc
-#       mdm-xephyr.inc
-#       mdm-links.inc
-#       mdm.conf
- 
+#       mdm-xephyr-loader (not sourced)
+#       mdm-conf
+
+ # diretório que contém os arquivos inclusos
  INCLUDE=/usr/share/mdm/include
  
+ export TEXTDOMAINDIR=/usr/share/locale
+ export TEXTDOMAIN=multiseat-xephyr
+
  source ${INCLUDE}/mdm-debug.inc
  source ${INCLUDE}/mdm-path.inc
  source ${INCLUDE}/mdm-hardware.inc
- source ${INCLUDE}/mdm-xephyr.inc
- source ${INCLUDE}/mdm-links.inc
  source ${INCLUDE}/mdm-images.inc
+  
+ source ${CONFIG_FILE}
+ source ${INCLUDE}/mdm-links.inc
  source ${INCLUDE}/mdm-execute.inc
-
-#
-# Funcao Principal 
 
 function Main()
 {
-    case "${1}" in
-        open)
-            OpenTerminal ${2}
-            ;;
-        *)
-            CallXephyr ${@}
-            ;;
-    esac
+    local TERMINAL=${1}
     
-} # Main
- 
- 
-# Ponto de entrada do script
+    OpenTerminal ${TERMINAL}
+    
+}
 
-    Main ${@}
+# Start
+
+    Main $@
     
     exit 0
-
+    

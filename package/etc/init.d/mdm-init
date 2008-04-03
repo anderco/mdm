@@ -1,6 +1,6 @@
 #! /bin/sh
 
 BASH=/bin/bash
-CMD=/usr/sbin/mdm-exec
+CMD=/usr/sbin/mdm-run
 
 ${BASH} ${CMD} ${1}

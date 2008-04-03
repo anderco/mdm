@@ -92,9 +92,19 @@ function InitSystem()
         DEBUG_ENABLED=0
     fi
     
+    # inicializa o modo de criacao de links
+    if [[ -z "${LINK_CREATION_MODE}" ]]; then
+        LINK_CREATION_MODE="once"
+    fi
+    
     # inicializa o gerenciador de login
     if [[ -z "${DISPLAY_MANAGER}" ]]; then
         DISPLAY_MANAGER="gdm"
+    fi
+    
+    # inicializa o servidor remoto
+    if [[ -z "${QUERY_COMMAND}" ]]; then
+        QUERY_COMMAND="xdmcpserver"
     fi
     
     # Cria os diretórios necessários ao MDM
