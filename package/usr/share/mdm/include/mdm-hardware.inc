@@ -233,30 +233,13 @@ function VideoCards()
 #
 # Parâmetros:   nenhum
 # Saida:        imprime na saída padrão o número de cabecas a serem usadas
-#               O numero de cabecas pode ser forcado através do arquivo de 
-#               configuracao do mdm.
 #
 
 function NumHeads()
 {
-    # obtem o número de mouses conectados ao computador
-    local MICE=`Mice | wc -l`
-    
-    # obtem o número de teclados conectados ao computador
-    local KBD=`Keyboards | wc -l`
-    
+   
     # assume que o número de cabecas é igual ao número de placas de vídeo
     local HEADS=`VideoCards driver | wc -l`
-    
-    # fica com o menor entre teclados e placas de video
-    if [[ ${KBD} -lt ${HEADS} ]]; then
-        HEADS=${KBD}
-    fi
-    
-    # fica com o menor entre teclados, placas de video e mouses
-    if [[ ${MICE} -lt ${HEADS} ]]; then
-        HEADS=${MICE}
-    fi
     
     # checa se a variável HEADS contém um valor válido
     if [[ -z ${HEADS} || ${HEADS} -lt 1 ]]; then

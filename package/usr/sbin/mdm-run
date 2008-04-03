@@ -267,7 +267,7 @@ function StopPID()
     local STOP
     
     for STOP in `ls ${PIDS}/${FILES}`; do
-        local PID=`cat ${PIDS}/${STOP}`
+        local PID=`cat ${STOP}`
         # verifica se conseguiu terminar o processo
         if [[ ! `kill -TERM ${PID}` ]]; then
             WriteDebug "${STOP%%_*} não parou!"
