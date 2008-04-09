@@ -107,7 +107,7 @@ function OpenTerminal()
                         -mouse ${LINK_DIR}/mdmMouse${TERMINAL},5 \
                         -use-evdev -dpi 92 -audit 0 \
                         -display :0.$(( TERMINAL - 1 )) \
-                        -xauthority ${XAUTHORITY}"
+                        -xauthority ${XAUTHORITY} :${TERMINAL}"
             # cria a entrada para o servidor Xephyr dinamicamente
             ${GDMDynamic}   -a "${TERMINAL}=${XephyrLoader} \
                             -geometry ${RESOLUTION[${TERMINAL}]}+0+0 \
@@ -115,7 +115,7 @@ function OpenTerminal()
                             -mouse ${LINK_DIR}/mdmMouse${TERMINAL},5 \
                             -use-evdev -dpi 92 -audit 0 \
                             -display :0.$(( TERMINAL - 1 )) \
-                            -xauthority ${XAUTHORITY}"
+                            -xauthority ${XAUTHORITY} :${TERMINAL}"
          
             while (( 1 )); do
                 # invoca o servidor criado anteriormente
@@ -144,7 +144,7 @@ function OpenTerminal()
                                 -mouse ${LINK_DIR}/mdmMouse${TERMINAL},5 \
                                 -use-evdev -dpi 92 -audit 0 \
                                 -display :0.$(( TERMINAL - 1 )) \
-                                -xauthority ${XAUTHORITY}
+                                -xauthority ${XAUTHORITY} :${TERMINAL}
                 
                 WriteDebug $"Xephyr Local ${TERMINAL} morreu!"
                 

@@ -44,24 +44,24 @@ source ${INCLUDE}/mdm-hardware.inc
 DEBUG_FILE=CreateXorgConf.log
 
 #
-# Cria o arquivo xorg.conf.mdm
+# This function create xorg.conf.mdm
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 #
 
 function CreateXorgConf()
 {
-    WriteDebug $"Entrando no CreateXorgConf"
+    WriteDebug $"Entering CreateXorgConf"
     
-    # obtém o número de cabecas a serem configuradas
+    # number of heads to be configurated
     local HEADS=`NumHeads`
     
-    WriteDebug $"Número de cabecas detectadas: ${HEADS}"
+    WriteDebug $"Total heads detected: ${HEADS}"
     
-    # copia a sessão estática do xorg.conf
+    # set static section for xorg.conf 
     cat ${TEXT_DIR}/static_xorg.txt > ${XORG_MDM}
     
-    # copia server flags para mono ou multiterminal
+    # set server flags for mono or multihead
     if [[ ${HEADS} -eq 1 ]]; then
         cat ${TEXT_DIR}/one_head_xorg.txt >> ${XORG_MDM}
     else
@@ -69,57 +69,60 @@ function CreateXorgConf()
     fi
     
     #***********************************
-    # sessão de configuracão do mouse
+    # Mouse Configuration Section
     #***********************************
     
+    WriteDebug $"Starting mouse section"
     local FIRST_MOUSE=`Mice | head -1 | cut -f 2`
     
-    # verifica o protocolo do mouse a ser utilizado
+    # verify mouse protocol to be used
     if [[ `echo ${FIRST_MOUSE} | egrep -q "^serial[0-9]$"` ]]; then
-        # protocolo mouse serial
+        # serial mouse protocol
         sed -e "s/PROTOCOL/Microsoft/" \
             -e "s/DEVICE/\/dev\/ttyS${FIRST_MOUSE:6:1}/" \
             ${TEXT_DIR}/mouse_xorg.txt >> ${XORG_MDM}
     else
-        # protocolo mouse PS/2    
+        # PS/2 protocol
         sed -e "s/PROTOCOL/ImPS\/2/" \
             -e "s/DEVICE/\/dev\/input\/mice/" \
             ${TEXT_DIR}/mouse_xorg.txt >> ${XORG_MDM}
     fi
     
     #***********************************
-    # sessão de configuracão do teclado
+    # Keyboard Configuration Section
     #***********************************
     
+    WriteDebug $"Starting keyboard section"
+    
     if [[ ${HEADS} -eq 1 ]]; then
-        # para uma cabeca usa protocolo do xorg
+        # for one head, user xorg protocol
         local KBD_RULES=xorg
     else
-        # para mais de uma cabeca, utiliza protocolo evdev
+        # for multihead, use evdev protocol
         local KBD_RULES=evdev
     fi
     
-    # seta configuracao para teclado ABNT2, Brasileiro.
-    # TODO: Internacionalizar teclados
+    # set keyboard configuration to Brazilian ABNT2.
+    # TODO: International Keyboards Layout
     local KBD_MODEL=abnt2
     local KBD_LAYOUT=br
     
-    # seta configuracao do teclado
+    # set keyboard configuration
     sed -e "s/KBD_RULES/${KBD_RULES}/" \
         -e "s/KBD_MODEL/${KBD_MODEL}/" \
         -e "s/KBD_LAYOUT/${KBD_LAYOUT}/" \
         ${TEXT_DIR}/keyboard_xorg.txt >> ${XORG_MDM}
         
     #***********************************
-    # sessão de configuracão do video
+    # Video Configuration Section
     #*********************************** 
     
-    WriteDebug $"Iniciando a sessão das placas de vídeo"
+    WriteDebug $"Starting video boards section"
     
     local BUS_IDS=(`VideoCards bus`)
     local DRIVERS=(`VideoCards driver`)
     
-    # associa cada driver com o dispositivo físico
+    # associate every physical device with one driver
     for (( i=0; i < ${#BUS_IDS[@]}; i++ )); do
         sed -e "s/CARD/${i}/" \
             -e "s/BUS_ID/${BUS_IDS[i]}/" \
@@ -128,21 +131,21 @@ function CreateXorgConf()
     done 
     
     #***********************************
-    # sessão de configuracão do monitor
+    # Monitor Configuration Section
     #***********************************
    
-    WriteDebug $"Iniciando a sessão da configuracao do monitor"
+    WriteDebug $"Starting monitor section"
     
-    # associa a cada monitor as freqüências e as resolucões pré-definidas
+    # set HSYNC and VREFRESH for every monitor in system
     for (( i=1; i <= ${#BUS_IDS[@]}; i++ )); do
-        # se o sincronismo horizontal ou o retraco vertical não estão definidos,
-        # exclui a linha do xorg.conf
+        # if horizontal sync or vertical refresh are not defined, 
+        # delete them from xorg.conf.mdm
         if [[ -z ${HORIZSYNC[i]} || -z ${VERTREFRESH[i]} ]]; then
             sed -e "s/ID/$((i-1))/" \
                 -e "/HORIZ_SYNC/d" \
                 -e "/VERT_REFRESH/d" \
                 ${TEXT_DIR}/monitor_xorg.txt >> ${XORG_MDM}
-        # se estão ambos definidos, seta no xorg.conf
+        # else, if they are defined, set them.
         else
             sed -e "s/ID/$((i-1))/" \
                 -e "s/HORIZ_SYNC/HorizSync\t${HORIZSYNC[i]}/" \
@@ -152,12 +155,12 @@ function CreateXorgConf()
     done
     
     #***********************************
-    # sessão de configuracão da screen
+    # Screen Configuration Section
     #***********************************
     
-    WriteDebug $"Iniciando a sessão das screen"
+    WriteDebug $"Starting screen section"
     
-    # configura o modo e as cores das screens
+    # set video resolution and color depth
     for (( i=1; i <= ${#BUS_IDS[@]}; i++ )); do
         sed -e "s/ID/$((i-1))/" \
             -e "s/DEFAULT_DEPTH/${DEPTH[i]}/" \
@@ -166,10 +169,10 @@ function CreateXorgConf()
     done
     
     #***********************************
-    # sessão de configuracão do Layout
+    # Layout Configuration Section
     #***********************************       
 
-    WriteDebug $"Iniciando sessão do Layout do Server"
+    WriteDebug $"Starting Server Layout Section"
     
     local SCREENS=""
     
@@ -180,21 +183,21 @@ function CreateXorgConf()
     sed -e "/BSCREENS/,/ESCREENS/c\ ${SCREENS}" \
         ${TEXT_DIR}/server_layout_xorg.txt >> ${XORG_MDM}
         
-    WriteDebug $"Saindo do CreateXorgConf"
+    WriteDebug $"Exiting CreateXorgConf"
 } # CreateXorgConf
 
 #
-# Inicializa o ambiente interno do sistema, criando variáveis que não estejam
-# definidas no arquivo de configuração
+# Start mdm system environment, creating vars that was not defined in 
+# configuration file (mdm.conf)
 #
-# Parâmetros:   primeiro parâmetro da linha de comando
-#                   * force     forca a criacão do xorg.conf.mdm
+# Parameters:   first argument from command line 
+#                   * force     forces creation of (overwrite) xorg.conf.mdm
 #
  
 function InitEnvironment() 
 {
 
-    # Verifica o modo de criação do xorg.conf.mdm
+    # verify creation mode to create xorg.conf.mdm
     if [[ -z "${CREATE_XORG_MODE}" ]]; then
         CREATE_XORG_MODE="once"
     fi
@@ -207,47 +210,47 @@ function InitEnvironment()
             start|stop)
                 ;;
             *)
-                echo $"Uso: create-xorg-conf [force]"
+                echo -e $"Syntax: create-xorg-conf [force]"
                 ;;
         esac
     fi
     
-    # Verifica as variáveis de inicialização de até 8 cabeças
+    # check init vars up to 8 heads
     for (( i=1; i < 9; i++ ))
     do
-        # inicializa a resolução padrão das cabeças
+        # default resolution for every head
         if [[ -z "${RESOLUTION[$i]}" ]]; then
             RESOLUTION[$i]="1024x768"
         fi
         
-        # inicializa número de cores padrão do sistema
+        # default color depth
         if [[ -z "${DEPTH[$i]}" ]]; then
             DEPTH[$i]="24"
         fi
         
-        # inicializa a frequencia horizontal
+        # default horizontal sync
         if [[ -z "${HORIZSYNC[$i]}" ]]; then
-            HORIZSYNC[$i]=""    #TODO: colocar frequencia padrao
+            HORIZSYNC[$i]=""    #TODO: to find a standard value
         fi
         
-        # inicializa o retraço vertical
+        # default vertical refresh
         if [[ -z "${VERTREFRESH[$i]}" ]]; then
-            VERTREFRESH[$i]=""  #TODO: colocar retraco padrao
+            VERTREFRESH[$i]=""  #TODO: to find a standard value
         fi
     done
 } # InitEnvironment
 
 #
-# Esta função verifica se deve criar ou não o arquivo xorg.conf.mdm
+# This function check if must create or not create the file xorg.conf.mdm
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 #
 
 function CheckXorgMode()
 {
     case ${CREATE_XORG_MODE} in
         once)
-            # xorg.conf.mdm já existe?
+            # xorg.conf.mdm already exists?
             if [[ -f "${XORG_MDM}" ]]; then
                 exit 0
             fi
@@ -256,43 +259,43 @@ function CheckXorgMode()
             return 
             ;;
         *)
-             WriteDebug $"Valor Inválido para CREATE_XORG_MODE" \
-                        $"Verifique ${CONFIG_FILE}"
+             WriteDebug $"Invalid value in CREATE_XORG_MODE." \
+                        $"Please, verify ${CONFIG_FILE}"
              exit 1
              ;;
     esac
 } # CheckXorgMode
 
 #
-# Função Principal
+# Main function
 function Main()
 {
 
-    # verifica se o usuário é root
+    # check if is root
     if [[ `IsRoot` != "1" ]]; then
-        echo $"Somente usuário root pode executar o create-xorg-conf"
+        echo $"Warning: Only root can execute this script!"
         exit 1
     fi
 
-    # Inicializa o sistema
+    # init mdm system
     InitSystem
     
-    # Inicializa o ambiente
+    # init system environment
     InitEnvironment $1
     
-    # Verifica se deve criar ou não o xorg.conf
+    # check creation mode for xorg.conf.mdm
     CheckXorgMode 
     
-    # Grava no log do sistema
-    WriteLog $"Criando xorg.conf.mdm"
+    # write system log
+    WriteLog $"creating xorg.conf.mdm"
     
-    # Cria o arquivo xorg.conf.mdm
+    # finally, creates xorg.conf.mdm
     CreateXorgConf
     
 } # Main
 
 
-# Ponto de entrada do script
+# script entry point
 
     Main $1
     

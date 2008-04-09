@@ -34,10 +34,10 @@
 #       XephyrLoader
 #       mdm.conf
  
- # versão do script
+ # script version
  VERSION=2.0.1
  
- # diretório que contém os arquivos inclusos
+ # include files path
  INCLUDE=/usr/share/mdm/include
  
  export TEXTDOMAINDIR=/usr/share/locale
@@ -55,58 +55,57 @@
 
 
 # 
-# Esta funcão verifica se o usuário tem privilégios de root. Caso não tenha,
-# aborta o script
+# This function check if user is root
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 
 function NeedRoot()
 {
-    # verifica se o usuário é root
+    # check root
     if [[ `IsRoot` != "1" ]]; then
-        echo $"Somente usuário root pode executar o mdm!"
+        echo $"Warning: Only root can execute this script!"
         exit 1
     fi
 } # NeedRoot
 
 #
-# funcão responsável por inicializar uma cabeca apenas
+# function to start a single head system
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 
 function OneHead()
 {
     case ${DISPLAY_MANAGER} in
         gdm)
-            WriteDebug $"Servidor local, gdm, uma cabeca."
+            WriteDebug $"Local server, gdm, one head."
 
-            # acrescenta servidor padrão do gdm
+            # add standard server to gdm
             ${GDMDynamic} "-a 0=StandardHandled"
 
-            # executa o servidor
+            # run server 0
             ${GDMDynamic} "-r 0"
             ;;
         remote)
-            WriteDebug $"Servidor remoto, uma cabeca. Query: ${QUERY_COMMAND}"
+            WriteDebug $"Remote server, one head. Query: ${QUERY_COMMAND}"
                 
-            # chama o X
+            # run X server
             ${X} -query ${QUERY_COMMAND} \
                  -config ${XORG_MDM} 2> ${LOG_DIR}/X.log &
                 
-            # pega o PID do X
+            # get X PID
             local PID=$!
                 
-            # guarda o PID do X
+            # store for future use in ExecStop()
             echo ${PID} > ${PIDS}/X.pid
                 
-            # aguarda até o processo do X terminar
+            # wait for X 
             wait ${PID}
                 
-            # exclui o PID criado anteriormente
+            # delete PID (we don't need it anymore)
             rm -f ${PIDS}/X.pid
             ;;
         *)
-            WriteDebug "OneHead(): Gerenciador ${DISPLAY_MANAGER} inválido."
+            WriteDebug "OneHead(): Invalid Display Manager: ${DISPLAY_MANAGER}"
             exit 2
             ;;
     esac
@@ -114,30 +113,30 @@ function OneHead()
 } # OneHead
 
 #
-# funcão responsável por carregar o setar cada uma das cabecas
+# This function set up heads
 #
-# Parâmetros:   número de cabecas a carregar
+# Parameters:   number of heads to load
 
 function SetHeads()
 {
-    # número de cabecas a setar
+    # number of heads to load
     local HEADS=${1}
     
-    # número da cabeca sendo conectada
+    # number of local head
     local HEAD
     
-    # executa cada uma cas cabecas
+    # set up every head
     for (( HEAD=1; HEAD <= HEADS; HEAD++ )); do
-        # display para ser associado com o terminal
+        # associate one display with this head
         export DISPLAY=:0.$(( HEAD - 1 ))
                 
-        # abre o terminal
+        # configure and display current head
         ${MDMService} ${HEAD} &
         
-        # pega o PID
+        # get the PID
         local PID=$!
         
-        # guarda o PID
+        # store for future use in ExecStop()
         echo ${PID} > ${PIDS}/mdm-service_${HEAD}.pid
     
     done
@@ -145,107 +144,107 @@ function SetHeads()
 } # SetHeads
 
 #
-# funcão responsável por inicializar mais de uma cabeca
+# Function to start multihead system
 #
-# Parâmetros:   número de cabecas a serem setadas
+# Parameters:   number of heads to setup
 
 function MultiHead()
 {
 
-    # número de cabecas a setar
+    # number of heads to setup
     local HEADS=${1}
 
-    # analisa o tipo de conexão
+    # check connection type
     case ${DISPLAY_MANAGER} in
         gdm)
-            WriteDebug $"Conexão local, multiterminal, GDM"
+            WriteDebug $"Local connection, multihead, gdm"
             
-            # adiciona o servidor padrão
+            # add standard server to gdm
             ${GDMDynamic} "-a 0=StandardNotHandled"
             
-            # executa o servidor
+            # run the server
             ${GDMDynamic} "-r 0"
             
-            # aguarda o servidor carregar
+            # wait server load
             sleep 4
             
-            # carrega as cabecas
+            # setup heads
             SetHeads ${HEADS}
             ;;
         remote)
-            WriteDebug $"Conexão remota, multiterminal. Query: ${QUERY_COMMAND}"
+            WriteDebug $"Remote connection, multihead. Query: ${QUERY_COMMAND}"
             
-            # inicia o X 
+            # run X server
             ${X} -br \
                  -noreset \
                  -dpi 92 \
                  -config ${XORG_MDM} 2> ${LOG_DIR}/X.log &
             
-            # pega o PID do X
+            # get X PID
             local PID=$!
             
-            # salva o pid
+            # store for future use in ExecStop()
             echo ${PID} > ${PIDS}/X.pid
             
-            # aguarda o servidor X terminar de carregar
+            # wait for X
             sleep 6
             
-            # gera um Xauthority
+            # Make a Xauthority file
             xauth -f ${XAUTH_FILE} generate :0
             
-            # seta novo Xauthority
+            # set new Xauthority
             export XAUTHORITY=${XAUTH_FILE}
             
-            # carrega as cabecas
+            # setup heads
             SetHeads ${HEADS}
             ;;
         *)
-            WriteDebug "MultiHead(): Gerenciador ${DISPLAY_MANAGER} inválido."
+            WriteDebug "MultiHead(): Invalid Display Manager: ${DISPLAY_MANAGER}"
             exit 2
             ;;
     esac
 } # MultiHead
 
 #
-# funcão que executa a inicializacão do sistema
+# This function start mdm system
 #
-# Parâmetros:   número de cabecas a serem setadas
+# Parameters:   number of heads to setup
 
 function ExecStart()
 {
-    # verifica se é root
+    # root is needed
     NeedRoot
     
-    # arquivo de PID do mdm
+    # mdm PID file
     local PID_FILE=${PIDS}/mdm.pid
     
-    # verifica se o mdm está em execucão
+    # check if mdm is running
     if [[ -f ${PID_FILE} ]]; then
-        echo -e $"Arquivo de PID encontrado. mdm já está rodando?"
-        echo -e $"Verifique ${PID_FILE}"
+        echo -e $"Found PID file. Is mdm running?"
+        echo -e $"Please, verify ${PID_FILE}"
         exit 2
     fi
       
-    # número de cabecas a abrir
+    # number of heads to setup
     local HEADS=${1}
     
-    # arquivos a serem excluidos      
+    # files to be deleted     
     local EXCLUDE
     
-    # deve criar o link sempre?
+    # links to keyb and mouse will be created?
     if [[ ${LINK_CREATION_MODE} == "always" ]]; then
-        # exclui possíveis arquivos de lock e link de sessões anteriores
+        # delete old links
         for EXCLUDE in `ls ${LINK_DIR} | grep "^mdm"`; do
             rm -f ${LINK_DIR}/${EXCLUDE}
         done
     fi
             
-    # exclui possíveis arquivos de PIDs de sessões anteriores
+    # delete old PID files
     for EXCLUDE in `ls ${PIDS}`; do
         rm -f ${PIDS}/${EXCLUDE}
     done
     
-    # uma só cabeca?        
+    # setup only one head?        
     if [[ ${HEADS} == 1 ]]; then
         OneHead
     else
@@ -255,10 +254,10 @@ function ExecStart()
 } # ExecStart
 
 #
-# esta funcao lê um PID de dentro de um arquivo, termina o processo e exclui o 
-# arquivo.
+# This function read a PID number from a file, kill process pointed by PID and
+# finally delete the file.
 #
-# Parametros:   nome do arquivo que contém o PID. Pode conter curingas.
+# Parameters:   file name that contains PID. Carets are allowed.
 #
 
 function StopPID()
@@ -266,184 +265,197 @@ function StopPID()
     local FILES=${1}
     local STOP
     
-    for STOP in `ls ${PIDS}/${FILES}`; do
+    for STOP in `ls ${PIDS}/${FILES} 2> null`; do
         local PID=`cat ${STOP}`
-        # verifica se conseguiu terminar o processo
-        if [[ ! `kill -TERM ${PID}` ]]; then
-            WriteDebug "${STOP%%_*} não parou!"
+        # check if process was killed
+        if ! kill -TERM ${PID}; then
+            WriteDebug "Warning: ${STOP%%_*} still running!"
         fi
-        rm -f ${PIDS}/${STOP}
+        rm -f ${STOP}
     done
 
 } # StopPID
 
 #
-# esta funcão para a execucão de multiterminais inicializados pelo mdm
+# This function stop mdm running service
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 
 function ExecStop()
 {
 
     local STOP
    
-    # mata mdm-service
+    # kill mdm-service
     StopPID "mdm-service_*.pid"
 
-    # mata Xephyr
+    # kill Xephyr
     StopPID "Xephyr_*.pid"
         
-    # mata o X
+    # kill X server
     StopPID "X.pid"
     
 } # ExecStop
 
 #
-# esta funcão forca o sistema a parar
+# this function forces system mdm to stop
+#
+# Parameters:   none
 
 function ExecForceStop() 
 {
 
     local STOP
         
-    # mata mdm-service
+    # kill mdm-service
     for STOP in `pidof ${MDMService}`; do 
         kill -TERM ${STOP}
     done
     
-    # mata gdmDynamic
+    # kill GDMDynamic
     for STOP in `pidof ${GDMDynamic}`; do
         kill -TERM ${STOP}
     done
     
-    # mata Xephyr
+    # kill Xephyr
     for STOP in `pidof ${Xephyr}`; do
         kill -TERM ${STOP}
     done
    
-    # mata X
+    # kill X server
     for STOP in `pidof ${X}`; do
         kill -TERM ${STOP}
     done
 
-    # exclui os arquivos de PID
+    # delete PID files
     for STOP in `ls ${PIDS}/*.pid`; do
-        rm -f ${PIDS}/${STOP}
+        rm -f ${STOP}
     done
     
 } # ExecForceStop
 
 #
-# Funcão principal
+# Main
 #
-# Parâmetros:   os da linha de comando
+# Parameters:   command line
 
 function Main()
 {
-    # servico a executar
+    # job to do
     local JOB=${1}
     
-    # Cria os diretórios necessários
+    # creates necessary directories
     InitSystem
     
-    # número de cabecas
+    # number of heads
     local HEADS=`NumHeads`
     
-    # verifica se o display manager está definido
+    # check if display manager is defined. If no, assumes "gdm"
     if [[ -z "${DISPLAY_MANAGER}" ]]; then
         DISPLAY_MANAGER="gdm"
     fi
     
-    # verifica se o servidor remoto está definido
+    # check if remote server is defined. If no, assumes "xdmcpserver"
     if [[ -z "${QUERY_COMMAND}" ]]; then
         QUERY_COMMAND="xdmcpserver"
     fi
     
-    # verifica os parâmetros de execão
+    # parse command line arguments
     case ${JOB} in
-        # mostra informacões sobre teclados, mouses e placas de video
+        # show informations about keyboards, mice and video boards
         info)
-            # mostra o copyright
+            # show the copyright
             MDMCopyright
 
-            # obtém lista de hardware detectados
+            # get the hardware list
             local KEYB=`Keyboards | wc -l`
             local MICE=`Mice | wc -l`
             local VIDEO=`VideoCards driver | wc -l`
             local HEADS=`NumHeads`
             
-            echo -e $"Teclado(s):\t${KEYB}"
-            echo -e $"Mouse(s):\t${MICE}"
-            echo -e $"Video(s):\t${VIDEO}"
+            echo -e $"Keyboard:\t${KEYB}"
+            echo -e $"Mouse:\t${MICE}"
+            echo -e $"Video:\t${VIDEO}"
             echo
             if [[ ${HEADS} -eq 1 ]]; then
-                echo -e $"Terminal com uma única cabeca."
+                echo -e $"Single head system."
             else
-                echo -e $"Multiterminal com ${HEADS} cabecas."
+                echo -e $"Multiseat with ${HEADS} heads."
             fi
             ;;
-        # inicializa o multiterminal
+        # starts a multiseat system
         start)
-            # mostra o copyright
+            # show the copyright
             MDMCopyright
             
-            # inicializa o terminal
+            # starts all the heads
             ExecStart ${HEADS}
             ;; 
-        # para o sistema, usando os arquivos de PID
+        # stop mdm system using PID files
         stop)
+            # show the copyright
+            MDMCopyright
+            
+            # stop running system
             ExecStop
             ;;
-        # forca o sistema a parar, usando o PIDOF para localizar os processos
+        # stop mdm system using PIDOF to locate all running scripts
         force)
+            # show the copyright
+            MDMCopyright
+            
+            # force mdm to stop 
             ExecForceStop
             ;;
-        # mata uma cabeca específica e reconfigura novamente
+        # kill a specific head, reconfiguring again
         reconfig)
-            # terminal a ser reconfigurado
+            # show the copyright
+            MDMCopyright
+ 
+            # head to be configured
             local TERMINAL=${2}
             
             if [[ -z "${TERMINAL}" ]]; then
-                echo $"Informe o número da cabeca para reconfigurar."
+                echo $"Please, inform the head number to be reconfigured."
                 exit 1
             fi
             
-            # arquivo de PID da cabeca a ser reconfigurada
+            # PID file for head to be reconfigured
             local XEPHYR_TO_KILL="mdm-service_${TERMINAL}.pid"
             
-            # verifica se a cabeca foi carregada
+            # verifies if head is running
             if [[ ! -f ${PIDS}/${XEPHYR_TO_KILL} ]]; then
-                echo $"Cabeca inválida ou não encontrada: ${TERMINAL}"
+                echo $"Invalid head or head not found: ${TERMINAL}"
                 exit 1
             fi
             
-            # para o mdm-service
+            # stop the mdm-service
             StopPID "${XEPHYR_TO_KILL}"
             
-            # para o Xephyr
+            # stop Xephyr
             StopPID "Xephyr_:0.$(( TERMINAL - 1 )).pid"
             
-            # remove teclado e mouse associado ao terminal específico
+            # remove keyboard and mouse links assigned to this head
             rm -f ${LINK_DIR}/mdm{Kbd,Mouse}${TERMINAL}
             
-            # reconfigura o terminal
+            # export display
             export DISPLAY=:0.$(( TERMINAL - 1 ))
                 
-            # abre o terminal
-            ${MDMService} open ${TERMINAL} &
+            # restart the head
+            ${MDMService} ${TERMINAL} &
         
-            # pega o PID
+            # get new PID
             local PID=$!
         
-            # guarda o PID
+            # saves PID
             echo ${PID} > ${PIDS}/mdm-service_${TERMINAL}.pid
             ;;
         *)
-            # mostra o copyright
+            # show the copyright
             MDMCopyright
             
-            # informa o usuário sobre o modo de uso
-            echo -e $"Use:"
+            # information about usage mode
+            echo -e $"Invalid parameter. Please, use:"
             echo -e $"\tmdm start|stop|force|reconfig <head>|info"
             ;;
     esac
@@ -451,7 +463,7 @@ function Main()
 }
  
  
-# Ponto de entrada do script
+# script entry point
 
     Main ${1}
     
