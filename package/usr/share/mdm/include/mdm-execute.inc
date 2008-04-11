@@ -1,7 +1,5 @@
 #
 # This file contains necessary functions to manage one head of multiseat.
-# Este arquivo contém as funcões necessárias para gerenciar uma cabeca do
-# multiterminal.
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -89,7 +87,6 @@ function OpenTerminal()
 
     local TERMINAL=${1}
     
-    # obtém teclado e mouse para o terminal
     # get keyboard and mouse to the seat
     GetLinks ${TERMINAL}
     

@@ -1,5 +1,4 @@
 #
-#  Funções para detecção de hardware no mdm
 #  Functions for hardware detection on mdm
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
@@ -18,23 +17,17 @@
 #       mdm-debug.inc
 
 #
-# Descobre os teclados instalados no sistema.
-# Discover keyboards and mice available on system.
+# Discover keyboards available on system.
 #
-# Parâmetros:   1, opcional
 # Parameters:   one (optional)
-#                   * all       mostra informacoes padrao do teclado (default)
 #                   * all       show default keyboard information (default)
-#                   * event     mostra apenas os eventos associados ao teclado
 #                   * event     show only keyboard associated events
 #
-# Saida:        imprime na saida padrão os teclados encontrados no sistema
 # Output:       print on standard output keyboard and mice found on system
 #
 
 function Keyboards()
 {
-    # verifica o parâmetro passado
     # check given parameters
     if [[ -z "${1}" ]]; then
         local TYPE=all
@@ -42,33 +35,32 @@ function Keyboards()
         local TYPE=${1}
     fi
         
-    # Seleciona os dispositivos físicos (endereços)
     # Select physical devices (addresses)
     local ALL_PHYSICAL=(`cat ${PROC_DEVICES} | \
                          grep P: | \
                          cut -d' ' -f2`)
     
-    # Seleciona os controladores dos dispositivos
+    # Select device controllers
     local ALL_HANDLERS=(`cat ${PROC_DEVICES} | \
                          grep H: | \
                          cut -d' ' -f2`)
     
-    # Seleciona os eventos dos dispositivos
+    # Select device events
     local ALL_EVENTS=(`cat ${PROC_DEVICES} | \
                        grep H: | \
                        sed 's/ /\n/g' | \
                        grep event`)
     
-    # Seleciona os nomes dos dispositivos
+    # Select device names
     local ALL_NAMES=(`cat ${PROC_DEVICES} | \
                       grep N: | \
                       cut -d'=' -f2 | \
                       tr -d ' '`)
 
-    # Regras para detecção do teclado:
-    #  * Palavra kbd deve estar no controlador 
-    #  * Palavra Speaker ou Button não devem estar no nome do dispositivo
-    #  * O endereço físico do dispostivo deve terminar em 0.
+    # Rules for keyboard detection:
+    #  * Word kbd must be in controller
+    #  * Word Speaker or Button must not be in device name
+    #  * Device physical address must end at 0.
     for (( i=0; i < ${#ALL_PHYSICAL[@]}; i=i+1 ))
     do
        if  echo ${ALL_HANDLERS[i]} | \
@@ -92,35 +84,35 @@ function Keyboards()
 } # Keyboards
 
 #
-# Descobre os mouses instalados no sistema
+# Discover mice available on system.
 #
-# Parâmetros:   tipo de saida (opcional)
-#                   * all       mostra informacões padrão do mouse (default)
-#                   * event     mostra apenas os eventos associados ao mouse
+# Parameters:   output type (opcional)
+#                   * all       show default information of mouse (default) 
+#                   * event     show only mouse associated events
 #
-# Saida:        imprime na saída padrão os mouses encontrados no sistema
+# Output:       print on standard output mice found on system
 #
 
 function Mice()
 {
-    # verifica o parâmetro passado
+    # check given parameter
     if [[ -z "${1}" ]]; then
         local TYPE=all
     else
         local TYPE=${1}
     fi
     
-    # Seleciona os dispositivos físicos (endereços)
+    # Select physical devices (addresses)
     local ALL_PHYSICAL=(`cat $PROC_DEVICES | \
                          grep P: | \
                          cut -d' ' -f2`)
     
-    # Seleciona os controladores dos dispositivos
+    # Select device controllers
     local ALL_HANDLERS=(`cat $PROC_DEVICES | \
                          grep H: | \
                          cut -d' ' -f2`)
     
-    # Seleciona os eventos dos dispositivos
+    # Select device events
     local ALL_EVENTS=(`cat ${PROC_DEVICES} | \
                        grep H: | \
                        sed 's/ /\n/g' | \
@@ -128,9 +120,9 @@ function Mice()
 
     case ${TYPE} in
         all)
-            # Regras para detectar o mouse: 
-            #   * handler deve conter mouse  
-            #   * Endereco fisico deve terminar em 0
+            # Rules for mouse detection:
+            #   * handler must contain mouse
+            #   * Physical address must end at 0.
             for (( i=0; i < ${#ALL_PHYSICAL[@]}; i=i+1 ))
             do
                 if echo ${ALL_HANDLERS[i]} | \
@@ -144,78 +136,77 @@ function Mice()
             done
             ;;
         event)
-            # eventos já utilizados
-            local USADOS=""
+            # already used events
+            local USED=""
 
-            # Regras para detectar eventos do mouse: 
-            #   * handler deve conter "mouse E"
-            #   * Endereco fisico deve terminar em 0
-            #   * Endereco fisico em /inputX não está em uso
-            #     (é necessário quando o mouse tem input1 sem
-            #      input0).
+            # Rules to detect mouse events:
+            #   * handler must contain "mouse E"
+            #   * Physical address must end at 0
+            #   * Physical address in /inputX is not in use
+            #     (it is necessary when mouse has input1 without input0).
             for (( i=0; i < ${#ALL_PHYSICAL[@]}; i=i+1 ))
             do
                 if echo ${ALL_HANDLERS[i]} | \
                     grep "mouse" > /dev/null && \
                     (echo ${ALL_PHYSICAL[i]} | \
-                     grep ".*0$" > /dev/null || \
-                     ! grep -q "${ALL_PHYSICAL[i]}" <<< ${USADOS}); then
+                    grep ".*0$" > /dev/null || \
+                    ! grep -q "${ALL_PHYSICAL[i]}" <<< ${USED}); then
 
-                    USADOS="${USADOS} $(cut -d/ -f1 <<< ${ALL_PHYSICAL[i]})"
+                    USED="${USED} $(cut -d/ -f1 <<< ${ALL_PHYSICAL[i]})"
                     echo -e "mevent\t/dev/input/${ALL_EVENTS[i]}"
                 fi
             done
             ;;
     esac 
-    # Se não encontrou nenhum mouse, assume mouse serial como padrão 
+    # If no mice were found, takes serial as default
     if [[ ${#ALL_PHYSICAL[@]} -eq 0 ]]; then
         echo -e "mouse\tserial0"
     fi
 } # Mice
 
 #
-# Descobre as placas de video instaladas no computador
+# Discover video cards installed on computer
 #
-# Parâmetros:   1 parametro opcional.
-#               podendo ser: driver, bus ou all. all é o default
-# Saida:        imprime na saída padrão o endereço do BUS da placa de video
-#               imprime na saída padrão o driver de video a ser usado
+# Parameters:   1 optional.
+#               that might be: driver, bus or all. all is default
+# Output:       print on standard output BUS address from video card
+#               print on standard output video driver to be used
 #
 function VideoCards()
 {
-    # verifica o parâmetro passado
+    # check given parameter
     if [[ $# -ne 1 ]]; then
         local TYPE=all
     else
         local TYPE=${1}
     fi
         
-    # Usa o discover para encontrar os drivers para os dispositivos
+    # Use discover to find drivers for devices
     local ALL_DRIVERS=(`${Discover} --type-summary \
                                     --data-path=xfree86/server/device/driver \
                                     display 2> /dev/null`)
 
-    # obtém lista de placas de video instaladas no computador
+    # obtain video cards list installed on computer
     local ALL_BUS_IDS=(`lspci | grep "VGA" | cut -f1 -d' '`)
     
     for (( i=0; i < ${#ALL_BUS_IDS[@]}; i=i+1 )); do
-        # Verifica se foi detectado um driver para o dispositivo.
-        # Se não encontrou o driver, assume o driver VESA
+        # Check if a driver was detected for device
+        # If did not found the driver, takes VESA driver
         if [[ "${ALL_DRIVERS[$i]}" = "" ]]; then 
             ALL_DRIVERS[$i]=vesa
         fi
         
-        # os BUSID retornados pelo comando lspci estão no formato 00:00.00
-        # vamos dividir o busid em 00 e 00.00
+        # BUSID returned by lspci command are in 00:00.00 format
+        # lets divide busid in 00 and 00.00
         NUMS=(`echo ${ALL_BUS_IDS[$i]} |  \
              awk 'BEGIN {FS=":"}{print toupper($1), toupper($2)}'`)
 
-    	# Agora, vamos dividir o 00.00 em 00 e 00
+        # Now, lets divide 00.00 in 00 and 00
         SEC_NUMS=(`echo ${NUMS[1]} |  \
                    awk 'BEGIN {FS="."}{print toupper($1), toupper($2)}'`)
                    
-        # Já temos os números divididos em grupo, vamos converter de 
-        # Hexadecimal para Decimal
+        # We already have numbers divided in group, lets convert from 
+        # Hexadecimal to Decimal
         if [[ ${TYPE} = "all" ]]; then
             echo -e "bus\t`echo "obase=10;ibase=16;${NUMS[0]};\
                     ${SEC_NUMS[0]};${SEC_NUMS[1]};" | bc | paste -s -d":"`"
@@ -225,7 +216,7 @@ function VideoCards()
         fi
     done
     
-    # Finalmente, escrevemos os drivers encontrados
+    # Finally, we write found drivers
     for i in ${ALL_DRIVERS[@]}
     do
         if [[ ${TYPE} = "all" ]]; then
@@ -237,24 +228,24 @@ function VideoCards()
 } # VideoCards
 
 #
-# Seta o número de cabecas a serem usadas
+# Set number of heads to be used
 #
-# Parâmetros:   nenhum
-# Saida:        imprime na saída padrão o número de cabecas a serem usadas
+# Parameters:   none
+# Output:       print on standard output the head number to be used
 #
 
 function NumHeads()
 {
    
-    # assume que o número de cabecas é igual ao número de placas de vídeo
+    # take head number as same as video card number
     local HEADS=`VideoCards driver | wc -l`
     
-    # checa se a variável HEADS contém um valor válido
+    # check if HEADS variable has a true value
     if [[ -z ${HEADS} || ${HEADS} -lt 1 ]]; then
         HEADS=1
     fi
     
-    # escreve o número de cabecas detectadas
+    # writes detected head number
     echo "${HEADS}"
 } # NumHeads
     
