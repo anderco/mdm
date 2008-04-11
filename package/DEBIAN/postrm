@@ -19,7 +19,7 @@
 # USA.
 
 #
-# Este script faz a limpeza do sistema após a desinstalacão
+# This script makes system cleaning after uninstallation
 #
 
 #**********************************
@@ -34,34 +34,34 @@ PIDS=/var/run/mdm
 GDM=/etc/gdm
 KBD=/usr/share/X11/xkb
 
-# remove da execucão automática o create-xorg-conf
+# remove create-xorg-conf from automatic execution
 update-rc.d -f mdm-create remove 
 
-# remove da execucão automática o mdm
+# remove mdm from automatic execution
 update-rc.d -f mdm-init remove
 
-# restaura o gdm.conf original
+# restore original gdm.conf
 dpkg-divert --package multiseat-xephyr --rename --remove ${GDM}/gdm.conf
 
-# restaura o evdev original
+# restore original evdev
 dpkg-divert --package multiseat-xephyr --rename --remove ${KBD}/keycodes/evdev
 
-# remove o xorg.conf.mdm
+# remove xorg.conf.mdm
 if [[ -f ${X11}/xorg.conf.mdm ]]; then
     rm -f ${X11}/xorg.conf.mdm
 fi
 
-# remove o diretório de temporários
+# remove temporary directories
 if [[ -d ${TMP} ]]; then
     rm -r -f ${TMP}
 fi
 
-# remove o diretório de logs
+# remove log directory
 if [[ -d ${LOG} ]]; then
     rm -r -f ${LOG}
 fi
 
-# remove o diretório de PIDs
+# remove PIDs directory
 if [[ -d ${PIDS} ]]; then
     rm -r -f ${PIDS}
 fi

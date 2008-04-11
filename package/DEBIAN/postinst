@@ -19,7 +19,7 @@
 # USA.
 
 #
-# Este script faz as configuracões pós instalacão do mdm
+# This script makes the mdm post installation configurations 
 #
 
 #**********************************
@@ -34,9 +34,9 @@ while [[ "${RESP}" != "y" && "${RESP}" != "n" ]]; do
 done
 
 if [[ ${RESP} == "y" ]]; then
-    # configura a inicialização automática do criador do xorg.conf
+    # sets automatic initialization of xorg.conf creator
     update-rc.d mdm-create start 12 2 3 4 5 . 
 
-    # configura a inicialização automática do gerenciador mdm
+    # sets gdm automatic initialization
     update-rc.d mdm-init start 97 2 3 4 5 . stop 97 0 1 6 . 
 fi

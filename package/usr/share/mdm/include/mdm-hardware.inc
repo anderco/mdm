@@ -1,5 +1,6 @@
 #
 #  Funções para detecção de hardware no mdm
+#  Functions for hardware detection on mdm
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -18,17 +19,23 @@
 
 #
 # Descobre os teclados instalados no sistema.
+# Discover keyboards and mice available on system.
 #
 # Parâmetros:   1, opcional
+# Parameters:   one (optional)
 #                   * all       mostra informacoes padrao do teclado (default)
+#                   * all       show default keyboard information (default)
 #                   * event     mostra apenas os eventos associados ao teclado
+#                   * event     show only keyboard associated events
 #
 # Saida:        imprime na saida padrão os teclados encontrados no sistema
+# Output:       print on standard output keyboard and mice found on system
 #
 
 function Keyboards()
 {
     # verifica o parâmetro passado
+    # check given parameters
     if [[ -z "${1}" ]]; then
         local TYPE=all
     else
@@ -36,6 +43,7 @@ function Keyboards()
     fi
         
     # Seleciona os dispositivos físicos (endereços)
+    # Select physical devices (addresses)
     local ALL_PHYSICAL=(`cat ${PROC_DEVICES} | \
                          grep P: | \
                          cut -d' ' -f2`)

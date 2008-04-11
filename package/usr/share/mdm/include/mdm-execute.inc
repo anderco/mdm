@@ -1,4 +1,5 @@
 #
+# This file contains necessary functions to manage one head of multiseat.
 # Este arquivo contém as funcões necessárias para gerenciar uma cabeca do
 # multiterminal.
 #
@@ -22,42 +23,42 @@
 #       mdm.conf
 
 #
-# Esta funcão é responsavel por obter os links para o teclado e o mouse
-# que serão associados ao terminal atual.
+# This function is responsible for getting mice and keyboard that will be 
+# associated to current seat.
 #
-# Parâmetros:   número do terminal para associar o mouse e teclado
+# Parameters:   seat number to associate mouse and keyboard with
 
 function GetLinks()
 {
 
     local TERMINAL=${1}
     
-    # aguarda um teclado para o terminal
+    # wait for a keyboard to the seat
     KeyboardLink ${TERMINAL}
 
-    # aguarda um mouse para o terminal
+    # wait for a mouse to the seat
     MouseLink ${TERMINAL}
     
-    # informa ao usuário para aguardar
+    # tell user to wait
     SetImage wait
     
-    # apaga as imagens temporárias
+    # erase temporary images
     SetImage free   
      
 } # GetLinks
 
 #
-# Esta funcão pergunta ao usuário se o terminal deve ser reconfigurado, ou seja,
-# se o terminal deve obter novo teclado e/ou mouse a ser usado.
+# This function asks to user if the seat must be reconfigured, is say, if seat
+# must get new keyboard and/or mice to be used.
 #
-# Parâmetros:   número do terminal a ser reconfigurado
+# Parameters:   seat number to be reconfigured
 
 function CheckReconfig()
 {
 
     local TERMINAL=${1}
     
-    # mostra mensagem de reconfiguracão do terminal
+    # show seat reconfiguration image
     SetImage reconfig
     
     local PRESSED=$(${ReadDevices} 14 \
@@ -66,22 +67,22 @@ function CheckReconfig()
                     cut -d'|' -f2)
 
     if [[ "${PRESSED}" = 'esc' ]]; then
-        WriteDebug $"Refazendo configuracão terminal remoto."
+        WriteDebug $"Reconfiguring remote seat."
                     
-        # refaz a configuracão
+        # redo configuration
         rm -f ${LINK_DIR}/mdmKbd${TERMINAL}
         rm -f ${LINK_DIR}/mdmMouse${TERMINAL}
                     
-        # obtém novos mouse e teclado para o terminal
+        # get new mouse and keyboard to the seat
         GetLinks ${TERMINAL}
     fi
     
 } # CheckReconfig
     
 #
-# Esta funcão é responsável por abrir um terminal do multiterminal
+# This function is responsible for openning a seat of multiseat
 #
-# Parâmetros:   número do terminal a ser aberto
+# Parameters:   seat number to be openned
 
 function OpenTerminal()
 {
@@ -89,6 +90,7 @@ function OpenTerminal()
     local TERMINAL=${1}
     
     # obtém teclado e mouse para o terminal
+    # get keyboard and mouse to the seat
     GetLinks ${TERMINAL}
     
     if [[ -z "${DISPLAY_MANAGER}" ]]; then
@@ -97,8 +99,8 @@ function OpenTerminal()
     
     case ${DISPLAY_MANAGER} in
         gdm)
-            WriteDebug $"O gdm é o display manager a ser usado."
-            # arquivo de XAUTHORITY do gdm
+            WriteDebug $"GDM is the display manager to be used."
+            # XAUTHORITY gdm's file
             export XAUTHORITY=/var/lib/gdm/\:0.Xauth
             
             WriteDebug "${TERMINAL}=${XephyrLoader} \
@@ -108,7 +110,7 @@ function OpenTerminal()
                         -use-evdev -dpi 92 -audit 0 \
                         -display :0.$(( TERMINAL - 1 )) \
                         -xauthority ${XAUTHORITY} :${TERMINAL}"
-            # cria a entrada para o servidor Xephyr dinamicamente
+            # creates entry to Xephyr server dinamically
             ${GDMDynamic}   -a "${TERMINAL}=${XephyrLoader} \
                             -geometry ${RESOLUTION[${TERMINAL}]}+0+0 \
                             -keyboard ${LINK_DIR}/mdmKbd${TERMINAL} \
@@ -118,26 +120,26 @@ function OpenTerminal()
                             -xauthority ${XAUTHORITY} :${TERMINAL}"
          
             while (( 1 )); do
-                # invoca o servidor criado anteriormente
+                # invokes just-created server
                 ${GDMDynamic} "-r ${TERMINAL}"
-                WriteDebug $"Xephyr Remoto ${TERMINAL} morreu!"
-                
-                # pergunta se o usuário quer reconfigurar terminal
+                WriteDebug $"Remote Xephyr ${TERMINAL} was killed!"
+
+                # ask if the user wants to reconfigure the seat                
                 CheckReconfig ${TERMINAL}
             done
             ;;
         remote)
-            WriteDebug $"Servidor remoto como display manager."
+            WriteDebug $"Remote server as display manager."
             
-            # verifica se existe nome do servidor a invocar. Se não existir,
-            # usa um nome padrão. Esta configuracao deve ser feita em mdm.conf
+            # checks is there is a server name to invoke. If not, takes a 
+            # default name. This option must be set at mdm.conf
             if [[ -z "${QUERY_COMMAND}" ]]; then
                 QUERY_COMMAND="xdmcpserver"
             fi
             
-            # repete indefinidamente
+            # repeats indefinitely
             while (( 1 )); do
-                # invoca o Xephyr com a opcão -query para login remoto
+                # invokes Xephyr with -query option for remote login
                 ${XephyrLoader} -query ${QUERY_COMMAND} \
                                 -geometry ${RESOLUTION[${TERMINAL}]}+0+0 \
                                 -keyboard ${LINK_DIR}/mdmKbd${TERMINAL} \
@@ -146,14 +148,14 @@ function OpenTerminal()
                                 -display :0.$(( TERMINAL - 1 )) \
                                 -xauthority ${XAUTHORITY} :${TERMINAL}
                 
-                WriteDebug $"Xephyr Local ${TERMINAL} morreu!"
+                WriteDebug $"Local Xephyr ${TERMINAL} was killed!"
                 
-                # pergunta se o usuário quer reconfigurar o terminal
+                # ask if the user wants to reconfigure seat
                 CheckReconfig ${TERMINAL}
             done
             ;;
         *)
-            echo $"Display Manager Inválido. Verifique mdm.conf e corrija."
+            echo $"Invalid Display Manager. Check mdm.conf and correct it."
             ;;
     esac
     

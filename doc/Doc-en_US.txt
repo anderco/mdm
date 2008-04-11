@@ -279,4 +279,20 @@ ___
 
 Function MDMCopyright:
  Writes on screen Copyright messages.
-___
+
+***
+
+/usr/share/mdm/include/mdm-xephyr.inc:
+
+This file has needed functions to create symbolic links for keyboards and mice 
+and to associate them with an only seat. Xephyr is the one that makes it 
+possible.
+
+
+Function CallXephyr:
+ This function calls Xephyr, checking given parameters. After that, execute 
+Xephyr normally, storing errors in a logfile and keeping process ID, for 
+controlling purposes.
+Dependencies: 
+        mdm-path.inc
+        mdm-debug.inc
