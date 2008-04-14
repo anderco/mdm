@@ -1,9 +1,0 @@
-** History mdm-script
-**
-** This file contains chages in mdm script
-**
-** mdm script start multiseat system and call all other subsystem to run
-** a multiterminal or single terminal system.
-
-2008-02-18  Loirto A Santos
-    * Start to write history file
