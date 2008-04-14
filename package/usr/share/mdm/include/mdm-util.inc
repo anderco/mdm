@@ -123,8 +123,8 @@ function MDMCopyright()
 {
 
     echo "Multiseat Display Manager. Version ${VERSION}"
-    echo "Copyright (c) 2004-2008 Universidade Federal do Paraná (UFPR)"
-    echo "Centro de Computacão Científica e Software Livre (C3SL)"
+    echo "Copyright (c) 2004-2008 Universidade Federal do Parana (UFPR)"
+    echo "Centro de Computacao Cientifica e Software Livre (C3SL)"
     echo
     echo "This is free software."
     echo "You may redistribute copies of it under the terms of the"

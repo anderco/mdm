@@ -56,7 +56,7 @@ function CallXephyr()
     WriteDebug $"Inciando Xephyr. Parâmetros: ${ARGS[@]}"
     
     # executa o Xephyr
-    exec ${Xephyr} "${ARGS[@]}" 2> ${LOG_DIR}/Xephyr_${DISPLAY}.log &
+    ${Xephyr} "${ARGS[@]}" 2> ${LOG_DIR}/Xephyr_${DISPLAY}.log &
     
     local PID=$!
     
