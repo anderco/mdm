@@ -1,4 +1,5 @@
 #
+# System LOG functions
 # Funções de LOG do sistema
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
@@ -15,42 +16,39 @@
 #  Dependencies:
 #       none
 
-
 #
-# Esta função é responsável por escrever um log de debug do sistema.
-# Usa a variável de ambiente $DEBUG_FILE como nome do arquivo de
-# log a ser gravado.
+# This function is responsible for writing a debug system log.
+# It uses environmental variable $DEBUG_FILE as a log filename to be written.
 #
-# Parâmetros:   texto a ser gravado (obrigatório)
-#               texto2 a ser gravado (opcional)
+# Parameters:   text to be written (mandatory)
+#               text2 to be written (optional)
 #
 
 function WriteDebug()
 {
     if [[ ! -z "${DEBUG_ENABLED}" &&  "${DEBUG_ENABLED}" -eq 1 ]]; then
-        # cria o arquivo de log, caso não exista ainda
+        # creates log file, case it does not exist yet
         local DBG=${DEBUG}/${DEBUG_FILE}
         
-        # escreve o log no arquivo de debug
+        # writes log on debug file
         echo -e "`date "+%D %R"` $1 $2" >> ${DBG}
         
-        # escreve o log na saida de erro padrão
+        # writes log on standard error output
         echo -e "$1" "$2" >&2
     fi
 }
 
 #
-# Esta função escreve um log genérico do sistema dentro do arquivo
-# mdm_sys.log
+# This function writes a generic system log inside mdm_sys.log file
 #
-# Parâmetros:   texto a ser gravado (obrigatório)
-#               texto2 a ser gravado (opcional)
+# Parameters:   text to be written (mandatory)
+#               text2 to be written (optional)
 #
 
 function WriteLog()
 {
     local LOG=${DEBUG}/mdm-sys.log
     
-    # escreve o log no arquivo de logs
+    # writes log on logs file
     echo -e "`date "+%D %R"` $1 $2" >> ${LOG}
 }

@@ -33,7 +33,7 @@
 #       mdm-xephyr-loader (not sourced)
 #       mdm-conf
 
- # diretório que contém os arquivos inclusos
+ # directory that contains include files
  INCLUDE=/usr/share/mdm/include
  
  export TEXTDOMAINDIR=/usr/share/locale

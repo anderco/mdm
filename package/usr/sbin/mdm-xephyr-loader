@@ -18,14 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-#  A funcão deste script é carregar o Xephyr. Ele pode ser chamado
-#  para fazer uma de duas funcões:
-#       * chamar diretamente o script que chama o Xephyr
-#       * chamar indiretamente o script que chama o Xephyr, através da
-#         funcão OpenTerminal. Este recurso é usado pq é preciso manter
-#         um script rodando em segundo plano para cada uma das cabecas
-#         do terminal. Para maiores informacões, veja a funcão OpenTerminal
-#         no arquivo mdm-execute.inc
+#  The function of this script is to load Xephyr. It may be called
+#  to do one of two functions:
+#       * call directly the script that calls Xephyr
+#       * call indirectly the script that calls Xephyr, throught the
+#         OpenTerminal function. This resource is used because is necessary
+#         to keep a script running in background for each one of the seat 
+#         heads. To more information, see OpenTerminal function on 
+#         mdm-execute.inc file
 #
 
 #**********************************
@@ -52,7 +52,7 @@
  source ${INCLUDE}/mdm-execute.inc
 
 #
-# Funcao Principal 
+# Main Function
 
 function Main()
 {
@@ -62,7 +62,7 @@ function Main()
 } # Main
  
  
-# Ponto de entrada do script
+# Script entry point
 
     Main ${@}
     
