@@ -1,8 +1,8 @@
 #
-#  Este arquivo contém as funcões necessárias para criar os links simbólicos
-#  para os teclados e mouses de cada terminal. Estes links simbólicos serão
-#  utilizados pelo Xephyr para associar cada terminal a um teclado e mouse de 
-#  forma exclusiva.
+#  This file has necessary functions to create symbolic links to keyboards
+#  and mice of each seat. These symbolic links will be used by Xephyr to 
+#  associate each each seat to an only keyboard and mouse.
+
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -22,9 +22,9 @@
 #       mdm-debug.inc
 
 #
-# Esta funcão associa um teclado físico a um terminal, de forma exclusiva
+# This function associates a physical keyboard to an only seat
 #
-# Parâmetros:   número do terminal para associar o teclado
+# Parameters:   seat number to associate keyboard
 #
 
 function KeyboardLink()
@@ -34,7 +34,7 @@ function KeyboardLink()
     local TERMINAL=${1}
     local LINK
     
-    WriteDebug $"Configurando teclado, terminal ${1}"
+    WriteDebug $"Keyboard set, seat ${1}"
     
     if [[ -e ${LINK_DIR}/mdmKbd${1} ]]; then 
         CREATED=1
@@ -42,71 +42,71 @@ function KeyboardLink()
         CREATED=0
     fi
     
-    # verifica o modo de criacao dos links
+    # check link creation mode
     case ${LINK_CREATION_MODE} in
         always)
-            # ignora o link que já está criado
+            # ignore already created link
             CREATED=0
             ;;
         once)
-            # se o link já está criado, encerra
+            # if link is already created, close
             if [[ ${CREATED} ]]; then
                 return
             fi
             ;;
     esac
     
-    # pede para pressionar a fn
+    # ask for fn keypress
     SetImage keyboard ${TERMINAL}
     
-    # repete até ter o link criado
+    # repeat until get link created
     while (( ! ${CREATED} )); do
            
-        # eventos dos teclados
+        # keyboard events
         local KEYB_EVENTS=$( Keyboards event | cut -f2 )
         
-        # aguarda até ter  um teclado conectado (HOTPLUG TABAJARA)
+        # wait until get a keyboard connected
         if [[ -z "${KEYB_EVENTS}" ]]; then
             continue
         fi
         
-        # aguarda uma tecla ser pressionada no teclado
+        # wait a keypress
         local PRESSED=$( ${ReadDevices} ${TERMINAL} ${KEYB_EVENTS} | \
                          grep '^detecao' | \
                          cut -d '|' -f2 )
                         
-        # checa se pressionou ou esgotou tempo de espera
+        # check if a key has been pressed or time out
         if [[ ${PRESSED} != 'timeout' ]]; then
             
-            WriteDebug $"Criando link para o teclado."
+            WriteDebug $"Creating keyboard link."
             
-            # cria o link simbólico 
+            # create symbolic link
             ln -s ${PRESSED} ${LINK_DIR}/mdmKbd$1
             
-            # seta flag para indicar link criado
+            # set "created link" flag
             CREATED=1
             
-            # verifica se não existe outro link que aponta para o mesmo
-            # teclado. Se já houver, exclui o que acabou de criar e continua
-            # aguardando o próximo teclado ser pressionado
+            # check if there isn't another link pointing to the same keyboard.
+            # if there is, exclude the just created one and keep waiting for the
+            # next keypress
             for LINK in `ls ${LINK_DIR} | grep "\<mdmKbd"`; do
                           
-                # compara o LINK encontrado com o que acabou de criar
+                # compare found LINK whith the just create one
                 if [[ ${LINK} != "mdmKbd${1}" ]]; then
-                    # 
+                     
                     local AUX=$( stat -c %N ${LINK_DIR}/${LINK} | \
                                  cut -d'`' -f3 | \
                                  cut -d \' -f1 )
                     if [[ ${AUX} = ${PRESSED} ]]; then
-                        # exclui o link criado, deixando o antigo intacto
+                        # exclude created link, leaving the old one untouched
                         rm -f ${LINK_DIR}/mdmKbd${1}
                     
-                        # seta flag para indicar que o link ainda não foi criado
+                        # set "not created link" flag
                         CREATED=0
                         
-                        WriteDebug $"Teclado conectado a outra cabeca."
+                        WriteDebug $"Keyboard connected to another head."
                                             
-                        # este teclado já está em uso. Remove-o da lista
+                        # this keyboard is already in use. Remove it from list
                         KEYB_EVENTS=`echo ${KEYB_EVENTS} | \
                                      sed "s;\<${AUX}\>;;g"`
                     fi
@@ -115,26 +115,26 @@ function KeyboardLink()
         fi
     done
     
-    WriteDebug $"Teclado configurado! Terminal: ${TERMINAL}"
+    WriteDebug $"Keyboard configured! Seat: ${TERMINAL}" 
     
 } # KeyboardLink
 
 #
-# Esta funcão associa um mouse físico a um terminal, de forma exclusiva
+# This function associates a physicall mouse to an only seat
 #
-# Parâmetros:   número do terminal para associar o mouse
+# Parameters:   seat number to associate mouse with
 #
 
 function MouseLink()
 {
 
-    # 
+     
     local CREATED
     local TERMINAL=${1}
     local LINK
     local LOCK
     
-    WriteDebug $"Configurando mouse, terminal ${1}"
+    WriteDebug $"Configuring mouse, seat ${1}"
     
     if [[ -e ${LINK_DIR}/mdmMouse${1} ]]; then 
         CREATED=1
@@ -142,123 +142,127 @@ function MouseLink()
         CREATED=0
     fi
     
-    # verifica o modo de criacao dos links
+    # check link creation mode
     case ${LINK_CREATION_MODE} in
         always)
-            # ignora o link que já está criado
+            # ignore already created link
             CREATED=0
             ;;
         once)
-            # se o link já está criado, encerra
+            # if the link is already created, close
             if [[ ${CREATED} ]]; then
                 return
             fi
             ;;
     esac
 
-    # repete até conseguir um mouse para associar a este terminal
+    # repeat until get a mouse to associate with this seat
     while (( ! ${CREATED} )); do
     
-        WriteDebug $"Aguardando mouse conectado."
+        WriteDebug $"Waiting connected mouse."
         
         # listagem dos eventos de mouses conectados ao terminal
+        # events list of mice connected to the seat
         local MICE_EVENTS=$( Mice event | cut -f2 )
         
-        # repete até ter um mouse conectado
+        # repeat until get a connected mouse
         if [[ -z "${MICE_EVENTS}" ]]; then
             continue
         fi
         
-        # cria um arquivo de trava para impedir clicks do mesmo mouse para 
-        # outro terminal, ou vários mouses clicando no mesmo terminal.
+        # create a lock file to stop current mouse clicks to other seats,
+        # or many mice clicking at the same seat.
         local HAS_LOCK=1
         
-        # repete até encontrar um mouse disponível
+        # repeat until find an available mouse
         while (( ${HAS_LOCK} )); do
         
-            # cria arquivo de lock para o terminal sendo configurado
+            # create a lock file to seat currently being configured
             touch ${LOCK_DIR}/lock${1}
         
-            # assume que não há mouse associado a este terminal
+            # assume that there is no mouse associated with this seat
             HAS_LOCK=0
             
-            # checa todos os arquivos de lock existentes
+            # check all existing lock files
             for LOCK in `ls ${LOCK_DIR} | grep "\<lock"`; do
                 if [[ ${LOCK} != "lock${1}" ]]; then
                     HAS_LOCK=1
                 fi
             done
         
-            # verifica se há um mouse associado a este terminal
+            # check if there is a mouse associated with this seat
             if (( HAS_LOCK )); then
-                # mostra imagem para aguardar
+                # show wait image
                 SetImage wait
             
-                # exclui o arquivo de lock criado
+                # erase creatd lock file
                 rm -f ${LOCK_DIR}/lock${1}
             
-                # aguarda
+                # wait
                 sleep 1
             fi
         done
         
-        # coloca a imagem de pressione o botão esquerdo do mouse...
+        # show "press left mouse button" image...
         SetImage mouse 
         
-        WriteDebug $"Aguardando pressionamento do mouse. Cabeca ${1}"
+        WriteDebug $"Waiting mouse button press. Head ${1}"
         
-        # aguarda um botão do mouse ser pressionado
+        # wait a mouse button press
         local PRESSED=$( ${ReadDevices} 13 ${MICE_EVENTS} | \
                          grep '^detecao' | 
                          cut -d'|' -f2 )
                         
-        # verifica se houve time-out
+        # check if there was a timeout
         if [[ "${PRESSED}" = "timeout" ]]; then
-            # pede para aguardar
+            # ask for waiting
             SetImage wait
             
-            # remove a trava 
+            # remove lock file
             rm -f ${LOCK_DIR}/lock${1}
             
-            # aguarda 5 segundos
+            # wait 5 seconds
             sleep 5
         else
-            WriteDebug $"Pressionado: ${PRESSED}"
+            WriteDebug $"Pressed: ${PRESSED}"
             
-            # cria o link
+            # create link
             ln -s ${PRESSED} ${LINK_DIR}/mdmMouse${1}
             
-            # seta link como criado
+            # set link as created
             CREATED=1
             
-            # Verifica se já não existe outro link que aponta para este mouse.
-            # Se existir, exclui o que foi criado e repete todo o processo
+            # Check if there isn't another link pointing to this mouse.
+            # If there is, exclude ther recently created one and repeat the
+            # whole process.
+
             for LINK in `ls ${LINK_DIR} | grep "\<mdmMouse"`; do
-               # compara o LINK encontrado com o que acabou de criar
+               # compare found LINK with the recently created one
+            
                 if [[ ${LINK} != "mdmMouse${1}" ]]; then
-                    # 
+                     
                     local AUX=$(stat -c %N ${LINK_DIR}/${LINK} | \
                                 cut -d'`' -f3 | \
                                 cut -d \' -f1)
                             
                      if [[ ${AUX} = ${PRESSED} ]]; then
-                        # exclui o link criado
+                        # exclude created link
                         rm -f ${LINK_DIR}/mdmMouse${1}
                         CREATED=0
                     
-                        WriteDebug $"Mouse conectado a outra cabeca."
+                        WriteDebug $"Mouse connected to another heaad."
                     
-                        # remove da lista dos mouses disponíveis
+                        # remove it from available mice list
                         MICE_EVENTS=`echo ${MICE_EVENTS} | \
                                      sed "s;\<${AUX}\>;;g"`
                     fi
                 fi
             done
-            # exclui arquivo de lock
+            # exclude lock file
             rm ${LOCK_DIR}/lock${1}
         fi
     done
     
-    WriteDebug $"Mouse Configurado! Terminal: ${TERMINAL}"
+    WriteDebug $"Mouse Configured! Seat: ${TERMINAL]"
 } # MouseLink
 
