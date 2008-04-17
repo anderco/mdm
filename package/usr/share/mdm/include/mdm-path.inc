@@ -1,5 +1,5 @@
 #
-#  Este arquivo contém os caminhos e nomes de arquivos usados pelo MDM
+#  This file has names and filepaths used by MDM
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -15,7 +15,8 @@
 #  Dependencies:
 #       mdm-debug.inc
 
-# Diretórios necessários para o multiterminal
+# Needed directories for Multiseat
+
 PROC_DEVICES=/proc/bus/input/devices
 BIN_DIR=/usr/sbin
 SHARE_DIR=/usr/share/mdm
@@ -34,10 +35,12 @@ GDM=/etc/gdm
 
 
 # Arquivos do mdm
+# Mdm files
 CONFIG_FILE=${MDM_DIR}/mdm.conf
 DEBUG_FILE=mdm.log
 
 # Arquivos externos
+# External files
 GDM_CONF=${GDM}/gdm.conf
 XORG_CONF=${XORG}/xorg.conf
 XORG_MDM=${XORG}/xorg.conf.mdm
@@ -45,6 +48,7 @@ XAUTH_FILE=${LOG_DIR}/Xauth
 
 
 # Sistemas auxiliares necessários para o funcionamento do mdm
+# Auxiliary systems for mdm work
 GDMDynamic=`which gdmdynamic`
 Discover=`which discover`
 Convert=`which convert`
@@ -56,29 +60,29 @@ XephyrLoader=${BIN_DIR}/mdm-xephyr-loader
 MDMService=${BIN_DIR}/mdm-service
 
 #
-# Esta função verifica a existência dos diretórios do sistema. Caso os
-# diretórios não existam, eles são criados.
+# This function check the existence of system directories. Case they do not
+# exist, they are created.
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 #
 
 function CreatePath()
 {
-    # Verifica se o diretório de log existe. Se não existe, cria-o.
+    # Check if the log directory exists. If it does not, create it.
     if [[ ! -d ${DEBUG} ]]; then
         mkdir -p ${DEBUG}
-        WriteDebug $"Diretório de logs criado!"
+        WriteDebug $"Log directory created!"
     fi
     
-    # Verifica se o diretório de PIDs existe. Se não existe, cria-o.
+    # Check if de PIDs directory exists. If it does not, create it.
     if [[ ! -d ${PIDS} ]]; then
         mkdir -p ${PIDS}
-        WriteDebug $"Diretório de PIDs criado!"
+        WriteDebug $"PIDs directory created!"
     fi
     
-    # Verifica se o diretório temporário existe. Se não existe, cria-o.
+    # Check if the temp directory exists. If it does not, create it.
     if [[ ! -d ${TMP_DIR} ]]; then
         mkdir -p ${TMP_DIR}
-        WriteDebug $"Diretório de arquivos temporários criado!"
+        WriteDebug $"Temporary files directory created!"
     fi
 } # CreatePath
