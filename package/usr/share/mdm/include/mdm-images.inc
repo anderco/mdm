@@ -18,7 +18,7 @@
 #       mdm-debug.inc
 
 #
-# This function show an image according to given parameter
+# This function shows an image according to given parameter
 #
 # Parameters:   image type to be shown
 #                   * keyboard      show image to press Fn
