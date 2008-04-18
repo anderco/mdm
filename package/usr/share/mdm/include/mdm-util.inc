@@ -1,5 +1,5 @@
 #
-#  Utilitários do sistema mdm 
+#  MDM system utilities
 #
 # Copyright (C) 2004-2008 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -17,13 +17,13 @@
 #       mdm-debug.inc
 
 #
-# Esta funcão verifica se o usuário é o root.
+# This function checks if the user is root.
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 # 
-# Saida:        escreve na saida padrão:
-#                   0   usuário comum
-#                   1   usuário é root
+# Output:       writes onto standard output:
+#                   0   common user
+#                   1   superuser
 #
 
 function IsRoot()
@@ -36,88 +36,88 @@ function IsRoot()
 } # IsRoot
 
 #
-# Esta função verifica se estão instalados os programas necessários
-# para o perfeito funcionamento do mdm.
+# This function checks if necessary MDM system programs are installed for the
+# perfect system work.
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 #
 
 function CheckSystem()
 {
-    # Seta o nome do arquivo de log a ser gravado
+    # Set log filename to be written
     local DEBUG_FILE=System.log
     
-    # Verifica se o Discover está instalado
+    # Check if Discover is installed
     if [[ -z "${Discover}" ]]; then
-        WriteDebug $"Detecção Drivers de Video desabilitada." \
-                   $"Discover não encontrado."
+        WriteDebug $"Driver detection disabled."\
+                   $"Discover not found."
     fi
     
-    # Verifica se o GDMDynamic está instalado
+    # Check if GDMDynamic is installed
     if [[ -z "${GDMDynamic}" ]]; then
-        WriteDebug $"GDM Dynamic não encontrado. Por favor, instale-o."
+        WriteDebug $"GDM Dynamic not found. Please, install it."
         exit 1
     fi
     
-    # Verifica se o Xephyr está instalado
+    # Check if Xephyr is installed
     if [[ -z "${Xephyr}" ]]; then
-        WriteDebug $"Xephyr não encontrado. Por favor, instale-o."
+        WriteDebug $"Xephyr not found. Please, install it."
         exit 1
     fi
     
-    # Verifica se o X está instalado
+    # Check if X is installed
     if [[ -z "${X}" ]]; then
-        WriteDebug $"X não encontrado. Por favor, instale-o."
+        WriteDebug $"X not found. Please, install it." 
         exit 1
     fi
     
-    # Verifica se o xsetbg está instalado
+    # Check if xsetbg is installed
     if [[ -z "${ShowImage}" ]]; then
-        WriteDebug $"xsetbg não encontrado. Instale o pacote xloadimage."
+        WriteDebug $"xsetbg not found. Install xloadimage package."
         exit 1
     fi
 } # CheckSystem
 
 #
-# Esta função verifica se foram definidas algumas das variáveis essenciais
-# para a execução das rotinas do MDM. Caso elas não tenham sido definidas nos
-# arquivos de configuração, define-as com o valor padrão.
+# This function checks if some essential variables for MDM routines execution
+# were set. In case they were not set in the configuration files, set them with
+# default value.
 #
-    
+
 function InitSystem()
 {
 
-    # inicializa o mode de DEBUG como desligado
+    # initiate DEBUG mode as off
     if [[ -z "${DEBUG_ENABLED}" ]]; then
         DEBUG_ENABLED=0
     fi
     
-    # inicializa o modo de criacao de links
+    # initiate links creation mode
     if [[ -z "${LINK_CREATION_MODE}" ]]; then
         LINK_CREATION_MODE="once"
     fi
     
-    # inicializa o gerenciador de login
+    # initiate login manager
     if [[ -z "${DISPLAY_MANAGER}" ]]; then
         DISPLAY_MANAGER="gdm"
     fi
     
-    # inicializa o servidor remoto
+    # initiate remote server
     if [[ -z "${QUERY_COMMAND}" ]]; then
         QUERY_COMMAND="xdmcpserver"
     fi
     
-    # Cria os diretórios necessários ao MDM
+    # Create MDM necessary directories 
     CreatePath
     
-    # Verifica se os programas necessários estão instalados corretamente
+    # Check if needed programs are correctly installed
     CheckSystem
 } # InitSystem
 
 #
-# Esta funcão escreve o texto de copyright do sistema mdm
+# This funtion writes Copyright texts of MDM system
 #
-# Parâmetros:   nenhum
+# Parameters:   none
 
 function MDMCopyright()
 {
