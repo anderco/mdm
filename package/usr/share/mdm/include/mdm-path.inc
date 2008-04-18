@@ -34,12 +34,10 @@ XORG=/etc/X11
 GDM=/etc/gdm
 
 
-# Arquivos do mdm
 # Mdm files
 CONFIG_FILE=${MDM_DIR}/mdm.conf
 DEBUG_FILE=mdm.log
 
-# Arquivos externos
 # External files
 GDM_CONF=${GDM}/gdm.conf
 XORG_CONF=${XORG}/xorg.conf
@@ -47,7 +45,6 @@ XORG_MDM=${XORG}/xorg.conf.mdm
 XAUTH_FILE=${LOG_DIR}/Xauth
 
 
-# Sistemas auxiliares necessários para o funcionamento do mdm
 # Auxiliary systems for mdm work
 GDMDynamic=`which gdmdynamic`
 Discover=`which discover`
