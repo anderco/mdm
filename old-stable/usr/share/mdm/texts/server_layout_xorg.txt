@@ -1,0 +1,11 @@
+
+# -------------------- SERVER-LAYOUTS --------------------- 
+
+Section "ServerLayout"
+	Identifier      "X Configured"
+	Screen    0   "Screen 0" 0 0
+	BSCREENS
+	ESCREENS
+	InputDevice     "Generic Keyboard"
+        InputDevice     "Generic Mouse"
+EndSection

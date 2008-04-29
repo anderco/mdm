@@ -1,0 +1,36 @@
+
+Section "Files"
+	FontPath	"/usr/share/fonts/X11/misc"
+	FontPath	"/usr/X11R6/lib/X11/fonts/misc"
+	FontPath	"/usr/share/fonts/X11/cyrillic"
+	FontPath	"/usr/X11R6/lib/X11/fonts/cyrillic"
+	FontPath	"/usr/share/fonts/X11/100dpi/:unscaled"
+	FontPath	"/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+	FontPath	"/usr/share/fonts/X11/75dpi/:unscaled"
+	FontPath	"/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+	FontPath	"/usr/share/fonts/X11/Type1"
+	FontPath	"/usr/X11R6/lib/X11/fonts/Type1"
+	FontPath	"/usr/share/fonts/X11/100dpi"
+	FontPath	"/usr/X11R6/lib/X11/fonts/100dpi"
+	FontPath	"/usr/share/fonts/X11/75dpi"
+	FontPath	"/usr/X11R6/lib/X11/fonts/75dpi"
+	# path to defoma fonts
+	FontPath	"/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType"
+EndSection
+
+Section "Module"
+	Load	"i2c"
+	Load	"bitmap"
+	Load	"ddc"
+	Load	"dri"
+	Load	"extmod"
+	Load	"freetype"
+	Load	"glx"
+	Load	"int10"
+	Load	"type1"
+	Load	"vbe"
+EndSection
+
+Section "DRI"
+ Mode    0666
+EndSection
