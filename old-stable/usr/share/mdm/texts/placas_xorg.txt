@@ -1,0 +1,9 @@
+
+# -------------------- PLACAS DE VIDEO --------------------- 
+
+Section "Device"
+	Identifier  "Card CARD"
+	BusID       "PCI:BUS_ID"
+	Driver      "DRIVER"
+EndSection
+

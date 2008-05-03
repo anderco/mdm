@@ -1,0 +1,286 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+#  CHANGE LOG
+#
+#  17/dec/2007  first release       Loirto A Santos
+
+# ***************** DATA ***************************************
+#
+# VARS
+
+INIT=/etc/init.d
+GDM=/etc/gdm
+
+GDM_CONF=$GDM/gdm.conf
+GDM_REAL=$GDM/gdm.conf.mdm
+GDM_LOCAL=$GDM/gdm.conf.local
+GDM_REMOTE=$GDM/gdm.conf.remote
+MDM=$INIT/mdm
+MDM_CONF=/etc/mdm/mdm.conf
+MDM_TMP=/tmp/mdm.conf
+LOG_DIR=/var/log/mdm
+CREATE_XORG=$INIT/create_xorg_conf
+
+# include file(s)
+
+. $MDM_CONF
+
+# ***************** CODE ***************************************
+
+#
+# SERVICE_START
+#
+# Activate a service in rc?.d
+#
+# Parameters: service to activate
+# Returns:    nothing
+
+function service_start()
+{
+    # enable service start in runlevel 2-5
+    for i in {2,3,4,5} ; do 
+        FILE=$(ls /etc/rc$i.d/R??$1 2>&-) 
+        if [ $? -eq 0 ] ; then
+           mv $FILE $(echo $FILE | sed 's/\/R/\/S/')
+        fi
+    done
+    # enable service stop in runlevel 0,1 and 6
+    for i in {0,1,6}; do
+        FILE=$(ls /etc/rc$i.d/R??$1 2>&-) 
+        if [ $? -eq 0 ] ; then
+           mv $FILE $(echo $FILE | sed 's/\/R/\/K/')
+        fi
+    done
+    return 0
+}
+    
+#
+# SERVICE_STOP
+#
+# Disable a service in rc?.d
+#
+# Parameters: service to disable
+# Returns:    nothing
+
+function service_stop()
+{
+    # disable service service_start in runlevel 2-5
+    for i in {2,3,4,5} ; do 
+        FILE=$(ls /etc/rc$i.d/S??$1 2>&-) 
+        if [ $? -eq 0 ] ; then
+           mv $FILE $(echo $FILE | sed 's/\/S/\/R/')
+        fi
+    done
+    # disable service service_stop in runlevel 0,1 and 6
+    for i in {0,1,6}; do
+        FILE=$(ls /etc/rc$i.d/K??$1 2>&-)
+        if [ $? -eq 0 ] ; then
+           mv $FILE $(echo $FILE | sed 's/\/K/\/R/')
+        fi
+    done
+    return 0
+}
+
+#
+# MDM_STOP
+#
+# stop mdm service and restore system configuration
+#
+# Parameters: nothing
+# Returns:    nothing
+
+function mdm_stop()
+{
+    # check if mdm script exists 
+    if [ ! -f $MDM ]; then
+        echo "mdm Service not found or not installed!"
+        echo "Aborting..."
+        exit 2
+    fi
+    # check if MDM have eXecute flag
+    if [ ! -x $MDM ]; then
+        echo "mdm Service already stoped!"
+        exit 3
+    fi
+    # remove eXecute bit from mdm script
+    chmod a-x $MDM
+    chmod a-x $CREATE_XORG
+    # remove 'autorun'
+    service_stop mdm 
+    service_stop create_xorg_conf
+    # restore real gdm.conf
+    cp $GDM_REAL $GDM_CONF
+    # put gdm in 'autorun'
+    service_start gdm 
+    echo "mdm Service disabled! Please reboot system!"
+}
+
+#
+# MDM_START
+#
+# start mdm service and save system configuration
+#
+# Parameters: nothing
+# Returns:    nothing
+
+function mdm_start()
+{
+    # check if mdm script exists 
+    if [ ! -f $MDM ]; then
+        echo "mdm Service not found or not installed!"
+        echo "Aborting..."
+        exit 2
+    fi
+    # check if MDM have eXecute flag
+    if [ -x $MDM ]; then
+        echo "mdm Service already service_started!"
+        exit 3
+    fi
+    # put eXecute flag in mdm and create_xorg_conf
+    chmod +x $MDM
+    chmod +x $CREATE_XORG
+    # put mdm && create_xorg_conf in 'autorun'
+    service_start mdm
+    service_start create_xorg_conf
+    # Remote conection?
+    if [ $DISPLAY_MANAGER = "remote" ]; then
+        # disable gdm from 'autorun'
+        service_stop gdm
+    else
+        # gdm configuration for local multiseat
+        cp $GDM_LOCAL $GDM_CONF
+        # put gdm in 'autorun'
+        service_start gdm
+    fi
+    echo "mdm Service enabled! Please reboot system!"
+}
+
+#
+# SET_LOCAL
+#
+# Set mdm to work as a local multiseat
+#
+# Parameters: nothing
+# Returns:    nothing
+
+function set_local()
+{
+    cp -a $MDM_CONF $MDM_TMP
+    sed -e 's/^ *//' \
+        -e '/^DISPLAY_MANAGER/c \DISPLAY_MANAGER="gdm"' \
+        -e '/^QUERY_COMMAND/c \QUERY_COMMAND=""' $MDM_TMP > $MDM_CONF
+    rm $MDM_TMP
+    service_start gdm
+    service_start mdm
+    service_start create_xorg_conf
+    echo "Local multiseat configured."
+}
+
+#
+# SET_REMOTE
+#
+# Set mdm to work as a remote multiseat
+#Nota sobre os adicionais gnu
+# Parameters: nothing
+# Returns:    nothing
+
+function set_remote()
+{
+    cp -a $MDM_CONF $MDM_TMP
+    sed -e 's/^ *//' \
+        -e '/^DISPLAY_MANAGER/c \DISPLAY_MANAGER="remote"' \
+        -e "/^QUERY_COMMAND/c \QUERY_COMMAND=\"$1\"" $MDM_TMP > $MDM_CONF
+    rm $MDM_TMP
+    service_stop gdm
+    service_start mdm
+    service_start create_xorg_conf
+    echo "Remote multiseat configured."
+}
+
+function set_debug()
+{
+    cp -a $MDM_CONF $MDM_TMP
+    sed -e 's/^ *//' \
+        -e "/^DEBUG_MULTISEAT/c \DEBUG_MULTISEAT=$1" $MDM_TMP > $MDM_CONF
+    rm $MDM_TMP
+}
+
+function check_root()
+{
+    if [ ! -w /root ]; then 
+        echo "Needs root privilege to execute this script!"
+        echo "Aborting..."
+        exit 1
+    fi
+}
+
+# main function
+#
+
+# root?
+check_root
+
+case $1 in
+    start)
+        mdm_start
+        ;;
+    stop)
+        mdm_stop
+        ;;
+    local)
+        set_local
+        ;;
+    remote)
+        if [ $# -lt 2 ]; then
+            echo "For remote conection, please inform server name as a second parameter."
+            exit 4
+        fi
+        set_remote $2
+        ;;
+    debug)
+        if [ $# -lt 2 ]; then
+            echo "For debug, please inform on or off."
+            exit 4
+        fi
+        case $2 in
+            on)
+                set_debug 1
+                echo "Debug is on."
+                ;;
+            off)
+                set_debug 0
+                echo "Debug is off."
+                ;;
+            *)
+                echo "Invalid parameter, please inform on or off."
+                ;;
+        esac
+        ;;
+     clear_log)
+        rm $LOG_DIR/*
+        echo "Logs removed."
+        ;;
+     *)
+        echo "Usage:"
+        echo -e "mdm_config start | stop | local | remote <server name> | debug {on|off} | clear_log"
+        ;;  
+esac
+

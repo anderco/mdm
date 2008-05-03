@@ -1,0 +1,17 @@
+2007-12-17  Loirto A Santos
+	* script mdm_config included
+	* code for remote multiseat server included
+	* changes in directory structures
+
+2007-11-14  Loirto A Santos
+    * Option clean to exclude package files in Makefile
+    * Makefile to help creation of packages. Makefile is the preferred 
+      method to create packages. Makefile verifies the existence of any
+      file needed for mdm.
+    * scripts for creation of .deb package
+    * scripts for creation of .tar.gz and .tar.bz2 package
+	  
+2007-10-    Loirto A Santos (loirtosantos@gmail.com)
+    * included write_debug funcion in scripts
+    * documentation in source code was improved
+    * uses gdmdynamic to start multiseat
