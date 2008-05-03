@@ -50,7 +50,7 @@ function KeyboardLink()
             ;;
         once)
             # if link is already created, close
-            if [[ ${CREATED} ]]; then
+            if [[ ${CREATED} -eq 1 ]]; then
                 return
             fi
             ;;
@@ -150,7 +150,7 @@ function MouseLink()
             ;;
         once)
             # if the link is already created, close
-            if [[ ${CREATED} ]]; then
+            if [[ ${CREATED} -eq 1 ]]; then
                 return
             fi
             ;;
@@ -263,6 +263,6 @@ function MouseLink()
         fi
     done
     
-    WriteDebug $"Mouse Configured! Seat: ${TERMINAL]"
+    WriteDebug $"Mouse Configured! Seat: ${TERMINAL}"
 } # MouseLink
 
