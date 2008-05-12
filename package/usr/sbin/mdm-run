@@ -456,7 +456,7 @@ function Main()
             
             # information about usage mode
             echo -e $"Invalid parameter. Please, use:"
-            echo -e $"\tmdm start|stop|force|reconfig <head>|info"
+            echo -e $"\tmdm-run start|stop|force|reconfig <head>|info"
             ;;
     esac
     echo
