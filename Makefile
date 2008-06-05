@@ -8,7 +8,9 @@
 _PACK_NAME_=multiseat-xephyr
 _VERSION_=2.0.1_i386
 _FULLNAME_:=$(_PACK_NAME_)_$(_VERSION_)
-
+_OLD_STABLE_:=prd-multiterminal
+_OLD_PATH_:=old-stable/DEBIAN
+_OLD_VERSION_:=`grep Version $(_OLD_PATH_)/control | cut -d' ' -f2`
 # messages
 Msg1="Makefile for multiseat-xephyr v1.0"
 Msg2="Copyright (c) 2004-2008 Universidade Federal do Parana (UFPR)"
@@ -20,6 +22,7 @@ default:
 	@echo -e $(Msg3)
 	@echo -e "\nUse:"
 	@echo -e "\tmake deb\tto generate a .deb package" 
+	@echo -e "\tmake old-deb\tto generate a .deb old-stable package."
 	@echo -e "\tmake tar\tto generate a .tar package"
 	@echo -e "\tmake gzip\tto generate a .tar.gz package"
 	@echo -e "\tmake bzip\tto generate a .tar.bz2 package\n"
@@ -49,4 +52,10 @@ bzip:
 	@echo -e "Generating $(_FULL_NAME_).tar.bz2 package. Please wait..."
 	@tar -cjf $(_FULLNAME_).tar.bz2 -C package \
          etc/ usr/
+	@echo -e "Done."
+
+old-deb:
+	@echo -e $(Msg1)
+	@echo -e "Generating $(_OLD_STABLE)-$(_OLD_VERSION_).deb package. Please wait..."
+	@dpkg -b old-stable .
 	@echo -e "Done."
