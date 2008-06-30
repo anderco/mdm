@@ -1,7 +1,0 @@
-Description: The Multiseat-NetBoot is an optional package that offers another 
-functionality to Multiseat System, allowing remote connections to a server.
-
-Dependencies: Multiseat package.
-
-More information can be found in our wiki, where documentation is up to date:
-http://wiki.c3sl.ufpr.br/multiseat/

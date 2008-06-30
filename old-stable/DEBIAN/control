@@ -1,8 +1,0 @@
-Package:  prd-multiterminal
-Version: 1.0.3
-Section: universe/x11 
-Architecture: i386
-Priority: optional
-Depends: xserver-xorg, xfonts-base, xserver-xephyr (>=1.1.1), xloadimage (>=4.1), imagemagick (>=6.2), gdm, bc, discover (>=2.1)
-Maintainer: Loirto A Santos (multiterminal@c3sl.ufpr.br)
-Description: This software controls multiseat systems. It was developed by C3SL team at UFPR (www.c3sl.ufpr.br/multiseat).

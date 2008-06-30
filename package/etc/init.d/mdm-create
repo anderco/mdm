@@ -1,6 +1,0 @@
-#! /bin/sh
-
-BASH=/bin/bash
-CMD=/usr/sbin/mdm-create-xorg-conf
-
-${BASH} ${CMD} ${1}

@@ -1,7 +1,0 @@
-
-#---------------------SERVER FLAGS ----------------------------
-Section "ServerFlags"
-    #  Option    "DontVTSwitch" "yes"
-    Option    "DontZoom"     "yes"
-EndSection
-
