@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+MDM_OPT=/home/paulo/teste
+MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
+source $MDM_INCLUDE
+
+NEW_FILE=$(X -configure 2>&1 | grep "^Your xorg.conf file is " | cut -d' ' -f5)
+
+mv $NEW_FILE $MDM_XORG_CONF
+
+# As far as I've tested, openchrome still doesn't work with multiple screens
+# (definition of "far": tested with via 0x3344 in June 2008)
+sed -i s/openchrome/vesa/g $MDM_XORG_CONF
+
+echo '
+Section "ServerFlags"
+    Option    "DontVTSwitch"       "yes"
+    Option    "DontZoom"           "yes"
+    Option    "DontZap"            "yes"
+    Option    "AllowMouseOpenFail" "yes"
+    # Option    "BlankTime"    "0"
+    # Option    "StandbyTime"  "0"
+    # Option    "SuspendTime"  "0"
+    # Option    "OffTime"      "0"
+EndSection' >> $MDM_XORG_CONF

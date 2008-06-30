@@ -1,0 +1,229 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# This script starts a seat.
+# The argument is the number of the seat, starting from zero.
+# We assume $DISPLAY is already set here
+
+
+MDM_OPT=/home/paulo/teste
+MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
+source $MDM_INCLUDE
+
+READ_DEVICES=${MDM_SCRIPTS}/read-devices
+WRITE_MESSAGE=${MDM_SCRIPTS}/write-message
+IMAGE_FILE=${MDM_SHARE}/background.png
+PUT_IMAGE="xsetbg -fullscreen"
+
+SEAT_NUMBER=$1
+
+#MY_LOG=$MDM_LOGS/mdm-start-seat.${SEAT_NUMBER}.log
+
+function display_message () {
+    case $1 in
+        key_press)
+	    $WRITE_MESSAGE "Press the F$2 key" 1>&2
+	    ;;
+	button_press)
+	    $WRITE_MESSAGE "Click left button" 1>&2
+	    ;;
+	wait)
+	    $WRITE_MESSAGE "Please wait" 1>&2
+	    ;;
+	reconfigure)
+	    $WRITE_MESSAGE "Press ESC to reconfigure" 1>&2
+	    ;;
+    esac
+
+}
+
+function select_keyboard () {
+    if [ -e "${MDM_DEVICES}/keyboard${SEAT_NUMBER}" ]; then
+	return
+    fi
+
+    display_message key_press $SEAT_NUMBER
+
+    CREATED=0
+    while (( ! CREATED )); do
+	# Who are the keyboards?
+	KEYBOARDS=$($DISCOVER_DEVICES kevdev | cut -f2)
+	echo "    Keyboards = $KEYBOARDS" 1>&2
+
+	# Remove used keyboards
+	REMOVE=$(stat -c %N $MDM_DEVICES/keyboard* 2> /dev/null|
+	         cut -d'`' -f3 | cut -d"'" -f1)
+	for i in ${REMOVE}; do
+	    KEYBOARDS=`sed "s#$i# #g" <<< $KEYBOARDS`
+	done
+	echo "    ... after removing: Keyboards = $KEYBOARDS" 1>&2
+	
+	if [ -z "$KEYBOARDS" ]; then
+	    # No keyboards. Hopefully someone will connect one.
+	    sleep 1 # Don't use 100% CPU
+	    continue
+	fi
+
+	# See if someone presses the key:
+	PRESSED=$($READ_DEVICES $SEAT_NUMBER $KEYBOARDS | grep '^detect' | cut -d'|' -f2)
+
+	if [ -z "$PRESSED" ]; then
+	    # if $READ_DEVICES gets killed the script won't do bad stuff
+	    continue
+	fi
+	if [ "$PRESSED" = 'timeout' ]; then
+	    continue
+	fi
+
+	# Ok, someone pressed the key
+	ln -sf $PRESSED $MDM_DEVICES/keyboard${SEAT_NUMBER}
+	CREATED=1
+
+	# Verify is there is already another link in $MDM_DEVICES/keyboard* that
+	# points to the device. If there is, erase the one I created and
+	# continue looping
+	for i in `ls $MDM_DEVICES | grep "\<keyboard"`; do
+	    if [ "$i" != "keyboard${SEAT_NUMBER}" ]; then
+		AUX=$(stat -c %N $MDM_DEVICES/$i| cut -d'`' -f3| cut -d"'" -f1)
+		if [ "$AUX" = "$PRESSED" ]; then
+		    # Keyboard link already exists...
+		    rm -f $MDM_DEVICES/keyboard${SEAT_NUMBER}
+		    CREATED=0
+		fi
+	    fi
+	done
+    done
+
+    KEYBOARD="$MDM_DEVICES/keyboard${SEAT_NUMBER}"
+
+}
+
+function select_mouse () {
+    if [ -e "${MDM_DEVICES}/mouse${SEAT_NUMBER}" ]; then
+	return
+    fi
+
+    CREATED=0
+    while (( ! CREATED )); do
+	# Who are the mice?
+	MICE=$($DISCOVER_DEVICES mevdev | cut -f2)
+	
+	REMOVE=$(stat -c %N ${MDM_DEVICES}/mouse* 2> /dev/null|
+	         cut -d'`' -f3 | cut -d"'" -f1)
+	for i in ${REMOVE}; do
+	    MICE=`sed "s#$i# #g" <<< $MICE`
+	done
+	
+	if [ -z "$MICE" ]; then
+	    # No mice. Hopefully someone will connect one.
+	    sleep 1 # Don't use 100% CPU
+	    continue
+	fi
+
+	# Create the lock
+	LOCK_EXISTS=1
+	while (( LOCK_EXISTS )); do
+	    touch ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    LOCK_EXISTS=0
+	    for i in `ls $MDM_DEVICES | grep "\<lock"`; do
+		if [ "$i" != "lock${SEAT_NUMBER}" ]; then
+		    LOCK_EXISTS=1
+		fi
+	    done
+	    if (( LOCK_EXISTS )); then
+		# Yes, we'll call this lots of times...
+		display_message wait 
+		rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+		sleep 1;
+	    fi
+	done
+
+	# Now we have the lock!
+	display_message button_press
+
+	# See if someone presses the button:
+	PRESSED=$($READ_DEVICES 13 $MICE | grep '^detect' | cut -d'|' -f2)
+
+	if [ -z "$PRESSED" ]; then
+	    # If $READ_DEVICES gets killed, don't do unwanted stuff
+	    rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    continue
+	fi
+	if [ "$PRESSED" = 'timeout' ]; then
+	    # Wait 5 seconds to give other machines the opportunity to enter the
+	    # lock
+	    display_message wait
+	    rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    sleep 5
+	    continue
+	fi
+
+	# Ok, someone pressed the key
+	ln -sf $PRESSED ${MDM_DEVICES}/mouse${SEAT_NUMBER}
+	CREATED=1
+
+	# Verify is there is already another link in $MDM_DEVICES/mouse* that
+	# points to the device. If there is, erase the one I created and
+	# continue looping
+	for i in `ls $MDM_DEVICES | grep "\<mouse"`; do
+	    if [ "$i" != "mouse${SEAT_NUMBER}" ]; then
+		AUX=$(stat -c %N ${MDM_DEVICES}/$i| cut -d'`' -f3|cut -d"'" -f1)
+		if [ "$AUX" = "$PRESSED" ]; then
+		    # Mouse link already exists...
+		    rm -f ${MDM_DEVICES}/mouse${SEAT_NUMBER}
+		    CREATED=0
+		fi
+	    fi
+	done
+	rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+    done
+
+    MOUSE="${MDM_DEVICES}/mouse${SEAT_NUMBER}"
+}
+
+KEYBOARD=
+MOUSE=
+while (( 1 )); do
+
+    #log --log-file-only "Configuring devices..."
+    echo -e "\n--"
+    echo "Configuring seat:"
+
+    # Put image on the background
+    $PUT_IMAGE $IMAGE_FILE
+
+    echo "  selecting keyboard"
+    select_keyboard
+    echo "  selecting mouse"
+    select_mouse
+
+    echo "  starting seat"
+    display_manager_start_seat
+    
+    display_message reconfigure
+
+    PRESSED=$($READ_DEVICES 14 $KEYBOARD | grep '^detect' | cut -d'|' -f2)
+    if [ "$PRESSED" = 'esc' ]; then
+	rm -f $KEYBOARD
+	rm -f $MOUSE
+    fi
+
+done

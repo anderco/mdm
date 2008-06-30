@@ -1,0 +1,178 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# This script discover evdev mice and keyboards and also discovers video cards
+# on the machine.
+# For input devices, it uses /proc/bus/input/devices
+# For video cardes, it uses the "discover" package.
+
+# TODO: we should stop using /proc and "discover". We should use HAL and X!
+
+PROC_DEVICES=/proc/bus/input/devices
+DISCOVER=/sbin/discover
+
+# This function prints the physical addresses of the mice found
+function discover_input () {
+
+    # The elements of the list should contain a whole line of the file, so to
+    # make the attribution work, the line can't contain spaces
+    # Also, there are lines like "^P: $", and if we just grep them and cut -f2,
+    # they will become empty, and will mess with our lists 
+
+    NUMBER_OF_DEVICES=$(grep '^I:' $PROC_DEVICES | wc -l)
+    for(( i = 1; i <= ${NUMBER_OF_DEVICES}; i++ )); do
+	PHYS_ADDRS[i]=$(cat $PROC_DEVICES | grep '^P:' | \
+	                head -n $i | tail -n 1 | cut -d'=' -f2)
+	HANDLERS[i]=$(  cat $PROC_DEVICES | grep '^H:' | \
+	                head -n $i | tail -n 1 | cut -d'=' -f2)
+	NAMES[i]=$(     cat $PROC_DEVICES | grep '^N:' | \
+	                head -n $i | tail -n 1 | cut -d'=' -f2)
+    done
+
+    for (( i = 1; i <= ${#PHYS_ADDRS[@]}; i++ )); do
+
+	#echo "PHYS_ADDR: ${PHYS_ADDRS[i]}"
+	#echo "HANDLER:   ${HANDLERS[i]}"
+	#echo "NAME:      ${NAMES[i]}"
+	#echo "--"
+
+	EVDEV_NODE="/dev/input/`echo ${HANDLERS[i]}| tr ' ' '\n'| grep "event"`"
+
+	# XXX: "Speaker" should be the "PCSpeaker" device and "Button" should be
+	# all those power buttons and machintosh buttons (not mice!)
+
+	# A mouse has the physical address ending in "0" and its handler
+	# contains "mouse".
+        if echo ${HANDLERS[i]}   | grep -q "mouse"  && \
+	   echo ${PHYS_ADDRS[i]} | grep -q ".*0$"   && \
+	   echo ${NAMES[i]}      | egrep -q -v "(Speaker|Button)"; then
+
+            echo -e "mouse\t${PHYS_ADDRS[i]}"
+	    echo -e "mevdev\t${EVDEV_NODE}"
+        fi
+
+	# A keyboard has a "kbd" handler, its physical address ends in 0 and it
+	# doesn't have the "Speaker" or "Button" words on its name.
+        if echo ${HANDLERS[i]}   | grep -q "kbd"    && \
+           echo ${PHYS_ADDRS[i]} | grep -q ".*0$"   && \
+	   echo ${NAMES[i]}      | egrep -q -v "(Speaker|Button)"; then
+
+	    echo -e "kbd\t${PHYS_ADDRS[i]}"
+	    echo -e "kevdev\t${EVDEV_NODE}"
+  
+        fi
+    done
+
+    # if no mouse found, put a serial mouse as default 
+    #if [[ ${#PHYS_ADDRS[@]} == 0 ]]; then
+    #    echo -e "mouse\tserial0"
+    #fi
+}
+
+# Prints bus address and drivers of the video cards.
+function video_cards (){
+    
+    DRIVERS=(`$DISCOVER -t --data-path=xfree86/server/device/driver display`)
+    BUS_IDS=(`lspci | grep "VGA" | cut -f1 -d' '`)
+
+    for (( i=0 ; i < ${#BUS_IDS[@]}; i++ )) ; do
+	if [[ "${DRIVERS[$i]}" = "" ]]; then 
+            DRIVERS[$i]=vesa  # VESA=default
+        fi
+        # busid from lspci is in format 00:00.00
+        # below we split in 00 and 00.00
+        NUMS=(`echo ${BUS_IDS[$i]} |  \
+             awk 'BEGIN {FS=":"}{print toupper($1), toupper($2)}'`)
+		# now, we split 00.00 in 00 and 00
+        SEC_NUMS=(`echo ${NUMS[1]} |  \
+                 awk 'BEGIN {FS="."}{print toupper($1), toupper($2)}'`)
+		# now, we convert the numbers from hexa to decimal base 
+        echo -e "bus\t`echo "obase=10;ibase=16;${NUMS[0]};${SEC_NUMS[0]};${SEC_NUMS[1]};" | bc | paste -s -d":"`"
+
+    done
+    
+    for i in ${DRIVERS[@]}; do
+        echo -e "driver\t$i"
+    done
+} # video_cards
+
+# ******************** MAIN *************************
+
+if [[ "$#" = 0 ]]
+then
+    ARG=all  
+else
+    ARG=$1
+fi
+
+INPUT=`discover_input`
+CARDS=`video_cards`
+
+case $ARG in
+    all)
+        echo "$INPUT" | grep mouse
+        echo "$INPUT" | grep mevdev
+        echo "$INPUT" | grep kbd
+        echo "$INPUT" | grep kevdev
+        echo "$CARDS"
+        ;;
+    all2)
+        echo "$INPUT"
+	echo "$CARDS"
+	;;
+
+    mouse)
+        echo "$INPUT" | grep mouse
+        ;;
+    mevdev)
+        echo "$INPUT"  | grep mevdev
+        ;;
+    kbd)
+        echo "$INPUT" | grep kbd
+        ;;
+    kevdev)
+        echo "$INPUT" | grep kevdev
+        ;;
+
+    bus)
+        echo "$CARDS" | grep bus
+        ;;
+    driver)
+        echo "$CARDS" | grep driver
+        ;;
+    cards)
+        echo "$CARDS"
+        ;;
+
+    #debug)
+    #    echo "$INPUT" | egrep "(PHYS|HANDLER|NAME|--)"
+    #	;;
+    *)
+        echo "$1: unrecognized argument"
+	echo "Valid parameters: "
+	echo "mouse:  prints physical addresses of the mice"
+	echo "mevdev: prints the evdev mouse events"
+	echo "kbd:    prints physical addresses of the keyboards"
+	echo "kevdev: prints the evdev keyboard events"
+	echo "driver: prints the video card drivers"
+	echo "cards:  prints the video card bus IDs"
+	echo "all:    prints everything"
+        ;;
+esac

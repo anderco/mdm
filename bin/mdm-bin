@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# This is the script that is called by init.d/mdm, it is the one that actually
+# starts the "hard work".
+
+# Do this first:
+MDM_OPT=/home/paulo/teste
+MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
+source $MDM_INCLUDE
+
+MY_LOG=${MDM_LOGS}/mdm.log
+
+CREATE_XORG_CONF=${MDM_SCRIPTS}/create-xorg-conf
+START_SEAT=${MDM_SCRIPTS}/mdm-start-seat
+
+function exec_start() {
+	
+    log --log-file-only "Multiseat Display Manager version $MDM_VERSION"
+    log --log-file-only "Today is `date`."
+
+    if ([ "$RECREATE_XORG_CONF" = 'yes' ] || [ ! -f "$MDM_XORG_CONF" ]); then
+	$CREATE_XORG_CONF
+    fi
+	
+    if [ "$RECONFIGURE_INPUT" = 'yes' ]; then
+	# Removing links AND locks
+	for i in `ls $MDM_DEVICES`; do
+	    rm -f $MDM_DEVICES/$i
+	done
+    fi
+
+    KEYBOARDS=`$DISCOVER_DEVICES kevdev | wc -l`
+    MICE=`$DISCOVER_DEVICES mevdev | wc -l`
+    VIDEO_CARDS=`$DISCOVER_DEVICES driver | wc -l`
+
+    log "$KEYBOARDS keyboards detected"
+    log "$MICE mice detected"
+    log "$VIDEO_CARDS video cards detected"
+
+    if [ "$USE_MONOSEAT" = 'yes' ]; then
+	SEATS=1
+    else
+	SEATS=$VIDEO_CARDS
+    fi
+ 
+    # Other scripts assume we do this:
+    export DISPLAY=:0
+
+    # erase links, locks, logs, close stuff, whatever needed
+    display_manager_init
+
+    if [ "$SEATS" = "1" ]; then
+	log "Only 1 video card: not using multiseat"
+	display_manager_start_monoseat >> $MY_LOG 2>&1
+
+    else
+	display_manager_start_underneath_xserver >> $MY_LOG 2>&1
+
+	for ((i = 0; i < $SEATS; i++)); do
+	    export DISPLAY=:0.$i
+	    
+	    # display :0.$i must press key $(i+1)
+	    log --log-file-only "Starting seat $((i+1))"
+	    START_SEAT_LOG="${MDM_LOGS}/mdm-start-seat.$((i+1)).log"
+	    rotate_log ${START_SEAT_LOG}
+	    ${START_SEAT} $((i+1)) &> ${START_SEAT_LOG} &
+	    PID=$!
+	    echo $PID > ${MDM_PIDS}/start-seat.$((i+1)).pid
+	done
+    fi
+}
+
+function exec_stop() {
+
+    display_manager_stop
+
+    for i in `ls $MDM_PIDS/*.pid 2> /dev/null`; do
+	kill `cat $i` 2> /dev/null
+	rm -f $i
+    done
+}
+
+function exec_reconfigure() {
+    RECREATE_XORG_CONF='yes'
+    RECONFIGURE_INPUT='yes'
+    exec_stop
+    exec_start
+}
+
+#####
+
+rotate_log $MY_LOG
+
+# Check if we're root
+if [ ! "`id -u`" -eq  "0" ]; then
+    log "ERROR: not running as root user"
+    exit 1
+fi
+
+case "$1" in
+    start)
+        exec_start
+        ;;
+    stop)
+        exec_stop
+        ;;
+    restart)
+        exec_stop
+	exec_start
+        ;;
+    reconfigure)
+        exec_reconfigure
+        ;;
+    *)
+        ;;
+esac
+
+exit 0

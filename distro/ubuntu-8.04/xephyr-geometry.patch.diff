@@ -1,0 +1,138 @@
+diff -Nru xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/ephyr.c xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/ephyr.c
+--- xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/ephyr.c	2008-06-26 16:42:54.000000000 -0300
++++ xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/ephyr.c	2008-06-26 16:58:29.000000000 -0300
+@@ -437,7 +437,8 @@
+   *rotations = RR_Rotate_All|RR_Reflect_All;
+   
+   if (!hostx_want_preexisting_window()
+-      && !hostx_want_fullscreen()) /* only if no -parent switch */
++      && !hostx_want_fullscreen() /* only if no -parent switch */
++      && !hostx_want_user_geometry())
+     {
+       while (sizes[n].width != 0 && sizes[n].height != 0)
+ 	{
+diff -Nru xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/ephyrinit.c xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/ephyrinit.c
+--- xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/ephyrinit.c	2008-06-26 16:42:54.000000000 -0300
++++ xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/ephyrinit.c	2008-06-26 16:58:29.000000000 -0300
+@@ -98,6 +98,7 @@
+   ErrorF("-fullscreen   Attempt to run Xephyr fullscreen\n");
+   ErrorF("-grayscale    Simulate 8bit grayscale\n");
+   ErrorF("-fakexa       Simulate acceleration using software rendering\n");
++  ErrorF("-geometry geometry   Use specified geometry\n");
+   ErrorF("\n");
+ 
+   exit(1);
+@@ -142,6 +143,14 @@
+       ephyrFuncs.finiAccel = ephyrDrawFini;
+       return 1;
+     }
++  else if (!strcmp (argv[i], "-geometry"))
++    {
++      if (i+1 < argc)
++	{
++          hostx_use_user_geometry(argv[i+1]);
++	  return 2;
++	}
++    }
+   else if (argv[i][0] == ':')
+     {
+       hostx_set_display_name(argv[i]);
+diff -Nru xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/hostx.c xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/hostx.c
+--- xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/hostx.c	2008-06-26 16:42:54.000000000 -0300
++++ xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/hostx.c	2008-06-26 16:58:29.000000000 -0300
+@@ -59,9 +59,10 @@
+   int             depth;
+   int             server_depth;
+   XImage         *ximg;
+-  int             win_width, win_height;
++  int             win_width, win_height, win_x, win_y;
+   Bool            use_host_cursor;
+   Bool            use_fullscreen;
++  Bool		  use_user_geometry;
+   Bool            have_shm;
+ 
+   long            damage_debug_msec;
+@@ -73,7 +74,7 @@
+ };
+ 
+ /* memset ( missing> ) instead of below  */
+-static EphyrHostXVars HostX = { "?", 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
++static EphyrHostXVars HostX = { "?", 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+ 
+ static int            HostXWantDamageDebug = 0;
+ 
+@@ -118,7 +119,8 @@
+ hostx_want_screen_size(int *width, int *height)
+ {
+  if (HostX.win_pre_existing != None
+-     || HostX.use_fullscreen == True)
++     || HostX.use_fullscreen == True
++     || HostX.use_user_geometry == True)
+     {
+       *width  = HostX.win_width;
+       *height = HostX.win_height;
+@@ -168,6 +170,20 @@
+ }
+ 
+ void
++hostx_use_user_geometry(char *geometry)
++{
++  if (XParseGeometry (geometry, &HostX.win_x, &HostX.win_y,
++      		      &HostX.win_width, &HostX.win_height))
++    HostX.use_user_geometry = True;
++}
++
++int
++hostx_want_user_geometry(void)
++{
++  return HostX.use_user_geometry;
++}
++
++void
+ hostx_use_fullscreen(void)
+ {
+   HostX.use_fullscreen = True;
+@@ -447,9 +463,10 @@
+ void*
+ hostx_screen_init (int width, int height, int buffer_height)
+ {
+-  int         bitmap_pad;
+-  Bool        shm_success = False;
+-  XSizeHints *size_hints;
++  int             bitmap_pad;
++  Bool            shm_success = False;
++  XSizeHints     *size_hints;
++  XWindowChanges  values;
+ 
+   EPHYR_DBG("mark");
+ 
+@@ -525,6 +542,13 @@
+ 
+   XResizeWindow(HostX.dpy, HostX.win, width, height);
+ 
++  if (HostX.use_user_geometry)
++    {
++      values.x = HostX.win_x;
++      values.y = HostX.win_y;
++      XConfigureWindow(HostX.dpy, HostX.win, CWX | CWY, &values);
++    }
++
+   /* Ask the WM to keep our size static */
+   size_hints = XAllocSizeHints();
+   size_hints->max_width = size_hints->min_width = width;
+diff -Nru xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/hostx.h xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/hostx.h
+--- xorg-server-1.4.1.sem-patch/hw/kdrive/ephyr/hostx.h	2008-06-26 16:42:54.000000000 -0300
++++ xorg-server-1.4.1.com-patch-sem-compilar/hw/kdrive/ephyr/hostx.h	2008-06-26 16:58:29.000000000 -0300
+@@ -101,6 +101,12 @@
+ hostx_use_host_cursor(void);
+ 
+ void
++hostx_use_user_geometry(char *);
++
++int
++hostx_want_user_geometry(void);
++
++void
+ hostx_use_fullscreen(void);
+ 
+ int

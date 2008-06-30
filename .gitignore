@@ -1,0 +1,6 @@
+*.swp
+*~
+bin/read-devices
+bin/write-message
+mdm.tar.gz
+tmp

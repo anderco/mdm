@@ -1,0 +1,69 @@
+==============================
+MDM: Multiseat Display Manager
+=============================
+
+Although it is called a "Display Manager", mdm is actually a wrapper on the
+display manager: it just arranges displays and pair the input and output devices
+so the display manager will be able to start the seats properly.
+
+============
+How it works
+============
+
+- mdm:
+The mdm script is the "init.d" script. It must be called with the
+start/stop/restart/reconfigure arguments. It just prints some information on the
+screen and then calls the mdm-bin script.
+
+- mdm-bin:
+Here the real task starts. mdm-bin sets up the system to start a multiseat,
+detect video cards, calls create-xorg-conf if needed and then calls the scripts.
+If it detects a single-seat environment, it will just call the
+"display_manager_start_monoseat" function. If it detects a multiseat
+environment, it will call the other "display_manager*" functions and then call
+the mdm-start-seat script in background, one for each seat.
+
+- mdm-start-seat:
+This script is called once for each seat. It should "source" the correct display
+manager mode script and then then call the proper functions to associate the
+devices to the seat and then start the session (calling gdm, xdmcp or whatever).
+
+- mdm-common:
+This script has common functions and definitions and can be included by
+everyone. It also loads the config-file and includes the correct display
+manager mode.
+
+- mdm.conf:
+This is the config file. It is just a bash script that is sourced by the
+mdm-common script.
+
+- read-devices:
+Binary responsible for reading devices and detect key/button pressing. It is
+used to help associating devices to seats.
+
+- write-message:
+Binary that receives text as arguments and displays them on the screen.
+
+- modes/*:
+Scripts that should be sourced to start the xserver according to what needs to
+be called. MDM was designed to work with any kind of multiseat environment
+(multiple xservers, nested xservers, using gdm, kdm, xdm, xdmcp, vnc or anything
+else). To addapt mdm to your environment, you just need to write your "mode"
+script and configure mdm.conf to use it. See the "template" mode or the existing
+files to see what you'll need to implement and how.
+
+- create-xorg-conf:
+Script that creates the xorg-conf. As xserver evolves, this script should be
+updated (and simplified!). It can also take parameters from mdm.conf.
+
+- discover-devices:
+This script parses /proc/bus/input/devices to discover the existing mice and
+keyboard and report their evdev events. It also uses discover to find out the
+correct video drivers for the video cards. Other kinds of implementation could
+be considered (udev? hal? d-bus? mpx?).
+
+============
+Useful stuff
+============
+
+TODO

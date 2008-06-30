@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+. /lib/lsb/init-functions
+
+MDM_OPT=/home/paulo/teste
+MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export PATH
+MDM_BIN=${MDM_SCRIPTS}/mdm-bin
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting the Muliseat Display Manager..."
+	$MDM_BIN start
+	log_end_msg $?
+        ;;
+    stop)
+        log_daemon_msg "Stopping the Multiseat Display Manager..."
+	$MDM_BIN stop
+	log_end_msg $?
+        ;;
+    restart)
+        log_daemon_msg "Restarting the Multiseat Display Manager..."
+	$MDM_BIN restart
+	log_end_msg $?
+        ;;
+    reconfigure)
+        log_daemon_msg "Reconfiguring the Multiseat Display Manager..."
+	$MDM_BIN reconfigure
+	log_end_msg $?
+        ;;
+    *)
+        log_success_msg "Usage: /etc/init.d/mdm {start|stop|restart|reconfigure}"
+	exit 1
+        ;;
+esac
+
+exit 0
