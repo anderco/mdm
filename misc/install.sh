@@ -18,11 +18,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-# XXX: this is ugly...
+# XXX: Run this script from the "root" directory of the repo
 
-NEW_OPT=/home/paulo/teste2
+set -e
 
-for i in `rgrep -I '^MDM_OPT=.*$' * | cut -d':' -f1`; do
-    sed -i "s%^MDM_OPT=.*$%MDM_OPT=${NEW_OPT}%g" $i
+PREFIX=$(grep '^MDM_OPT' bin/mdm-common | cut -d'=' -f2)
 
-done
+mkdir -p $PREFIX
+cp -r tmp/* $PREFIX

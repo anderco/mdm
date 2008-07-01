@@ -20,7 +20,7 @@
 
 set -e
 
-# XXX: update these from mdm-common
+# XXX: get these from mdm-common
 
 TARGET=tmp/
 BASE_DIR=/
