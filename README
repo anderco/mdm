@@ -1,1 +1,41 @@
-For documentation, see the "doc" directory.
+==========
+INSTALLING
+==========
+
+Go to the "bin" directory.
+Choose the prefix for the instalation, and put it as an argument to the command
+change-prefix.sh:
+
+$ ./change-prefix.sh /home/myuser/mdm-testing/
+
+(soon this step will be replaced by a make --prefix)
+
+Now go back to the repository root directory, and "make install"
+
+$ make install
+
+=======
+RUNNING
+=======
+
+Go to the directory previously chose as the "prefix".
+
+Edit the mdm.conf file to adapt it to your needs:
+
+$ vim ./etc/mdm/mdm.conf
+
+Run the service:
+
+$ ./etc/init.d/mdm start
+
+To stop the service:
+
+$ ./etc/init.d/mdm stop
+
+==========
+DEVELOPING
+==========
+
+For documentation about these scripts, see the "doc" directory.
+
+For other information about multiseat, visit http://wiki.c3sl.ufpr.br/multiseat
