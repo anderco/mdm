@@ -11,13 +11,13 @@ xephyr:
 	apt-get source ${XEPHYR_PACKAGE_NAME}
 	cd ${XEPHYR_SOURCE_DIR} 			; \
 		patch -p1 < ../${XEPHYR_PATCH_FILE}	; \
-		fakeroot dpkg-buildpackage		;
+		fakeroot dpkg-buildpackage -us -uc	;
 
 libx11:
 	apt-get source ${LIBX11_PACKAGE_NAME}
 	cd ${LIBX11_SOURCE_DIR} 			; \
 		patch -p1 < ../${LIBX11_PATCH_FILE}	; \
-		fakeroot dpkg-buildpackage		;
+		fakeroot dpkg-buildpackage -us -uc	;
 
 clean:
 	rm -f *.deb
