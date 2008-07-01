@@ -1,10 +1,10 @@
 What you'll need to compile/use the package:
 
 Using the package:
-	xserver
+	An X server
 	libcairo2, libfreetype, libx11, libxft
-	xsetbg
-	discover
+	The xsetbg binary
+	The discover package
 
 Compiling binaries:
 	all: gcc
@@ -22,3 +22,9 @@ Packaging stuff:
 		tar, gzip
 	ubuntu:
 		dpkg
+
+Debian/Ubuntu users do this:
+$ apt-get source xserver-xephyr
+$ apt-get source libx11-6
+$ apt-get install libcairo2 libcairo2-dev libfreetype6 libfreetype6-dev \
+                  libx11-dev libxft-dev xloadimage discover
