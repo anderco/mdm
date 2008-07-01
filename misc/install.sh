@@ -22,7 +22,7 @@
 
 set -e
 
-PREFIX=$(grep '^MDM_OPT' bin/mdm-common | cut -d'=' -f2)
+PREFIX=$(grep '^MDM_PREFIX' bin/mdm-common | cut -d'=' -f2)
 
 mkdir -p $PREFIX
 cp -r tmp/* $PREFIX

@@ -20,8 +20,8 @@
 
 . /lib/lsb/init-functions
 
-MDM_OPT=/home/paulo/teste
-MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+MDM_PREFIX=/home/paulo/teste3
+MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 export PATH

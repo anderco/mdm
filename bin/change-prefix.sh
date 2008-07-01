@@ -20,9 +20,9 @@
 
 # XXX: this is ugly...
 
-NEW_OPT=/home/paulo/teste2
+NEW_PREFIX=/home/paulo/teste2
 
-for i in `rgrep -I '^MDM_OPT=.*$' * | cut -d':' -f1`; do
-    sed -i "s%^MDM_OPT=.*$%MDM_OPT=${NEW_OPT}%g" $i
+for i in `rgrep -I '^MDM_PREFIX=.*$' * | cut -d':' -f1`; do
+    sed -i "s%^MDM_PREFIX=.*$%MDM_PREFIX=${NEW_PREFIX}%g" $i
 
 done

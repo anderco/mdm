@@ -23,8 +23,8 @@
 # We assume $DISPLAY is already set here
 
 
-MDM_OPT=/home/paulo/teste
-MDM_SCRIPTS=${MDM_OPT}/usr/sbin
+MDM_PREFIX=/home/paulo/teste3
+MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
 MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
 source $MDM_INCLUDE
 
