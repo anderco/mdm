@@ -1,0 +1,24 @@
+What you'll need to compile/use the package:
+
+Using the package:
+	xserver
+	libcairo2, libfreetype, libx11, libxft
+	xsetbg
+	discover
+
+Compiling binaries:
+	all: gcc
+	write-message: libcairo2-dev libx11-dev freetype6-dev libxft-dev
+
+Patching packages:
+	debian-like:
+		libx11: "apt-get build-dep libx11-6"
+		Xephyr: "apt-get build-dep xserver-xephyr"
+		fakeroot
+		dpkg
+
+Packaging stuff:
+	generic:
+		tar, gzip
+	ubuntu:
+		dpkg
