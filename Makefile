@@ -14,9 +14,15 @@ targz: tree
 	@echo "Creating .tar.gz file"
 	tar cvzf mdm.tar.gz tmp/*
 
-tree: binaries
+tree: binaries prefix
 	@echo "Creating file tree in temporary folder tmp/"
 	misc/make-tree.sh
+
+prefix:
+	@if test ! -z "$(DESTDIR)"; then			\
+	    	echo "Changing prefix to $(DESTDIR)";		\
+		bin/change-prefix.sh $(DESTDIR);		\
+	fi
 
 binaries: bin/read-devices.c bin/write-message.c
 	$(CC) $(CFLAGS) bin/read-devices.c -o bin/read-devices

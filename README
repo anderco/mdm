@@ -2,23 +2,31 @@
 INSTALLING
 ==========
 
-Go to the "bin" directory.
-Choose the prefix for the instalation, and put it as an argument to the command
-change-prefix.sh:
+First of all, read the "dependencies" file and install all of them.
 
-$ ./change-prefix.sh /home/myuser/mdm-testing/
+Choose your destination directory (where the files will be installed), and use
+the following command:
 
-(soon this step will be replaced by a make --prefix)
+$ make DESTDIR=/home/myUser/mdm-testing/ install
 
-Now go back to the repository root directory, and "make install"
+You will also need a new Xephyr with the -geometry patch, and a patched Xlib so
+the Xephyr will not keep crashing. For ubutnu-8.04 users, do this:
 
-$ make install
+$ cd distro/ubuntu-8.04
+$ make
+
+Then install the xserver-xephyr and libx11-6 packages with "dpkg -i".
+
+You will also want to "hold" these packages so that apt will not replace them.
+
+For non-ubuntu users, apply the patches manually. They are located in the
+distro/generic directory.
 
 =======
 RUNNING
 =======
 
-Go to the directory previously chose as the "prefix".
+Go to the directory previously chosen as the destination.
 
 Edit the mdm.conf file to adapt it to your needs:
 
@@ -28,7 +36,7 @@ Run the service:
 
 $ ./etc/init.d/mdm start
 
-To stop the service:
+To stop the service use:
 
 $ ./etc/init.d/mdm stop
 
