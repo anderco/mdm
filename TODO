@@ -1,1 +1,3 @@
+Add internationalization support to the messages written on the screen.
+
 egrep -r "(TODO|XXX|FIXME)" *
