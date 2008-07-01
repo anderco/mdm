@@ -52,9 +52,9 @@ function exec_start() {
     MICE=`$DISCOVER_DEVICES mevdev | wc -l`
     VIDEO_CARDS=`$DISCOVER_DEVICES driver | wc -l`
 
-    log "$KEYBOARDS keyboards detected"
-    log "$MICE mice detected"
-    log "$VIDEO_CARDS video cards detected"
+    log --log-file-only "$KEYBOARDS keyboards detected"
+    log --log-file-only "$MICE mice detected"
+    log --log-file-only "$VIDEO_CARDS video cards detected"
 
     if [ "$USE_MONOSEAT" = 'yes' ]; then
 	SEATS=1
