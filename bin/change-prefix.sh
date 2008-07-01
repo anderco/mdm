@@ -18,9 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-# XXX: this is ugly...
-
-NEW_PREFIX=/home/paulo/teste2
+NEW_PREFIX=$1
 
 for i in `rgrep -I '^MDM_PREFIX=.*$' * | cut -d':' -f1`; do
     sed -i "s%^MDM_PREFIX=.*$%MDM_PREFIX=${NEW_PREFIX}%g" $i

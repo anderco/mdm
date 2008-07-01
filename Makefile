@@ -1,3 +1,6 @@
+# FIXME: this Makefile should not make the tree even if there is no need to do
+# it
+
 CC = gcc
 CFLAGS = -O2 -Wall
 
