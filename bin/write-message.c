@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
  * USA.
- *
+ */
 
 
 /* compiling with: 
@@ -34,7 +34,6 @@ int main (int argc, char *argv[] )
     Display *display = XOpenDisplay(NULL);
     Visual *visual;
     Window win;
-	XEvent event;
     
     cairo_surface_t *surface; 
     cairo_text_extents_t extents;
