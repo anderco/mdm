@@ -20,7 +20,7 @@
 
 . /lib/lsb/init-functions
 
-MDM_PREFIX=/home/paulo/teste3
+MDM_PREFIX=/
 MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin

@@ -23,7 +23,7 @@
 
 MDM_VERSION='0.0.1'
 
-MDM_PREFIX=/home/paulo/teste3
+MDM_PREFIX=/
 
 MDM_LOGS=$MDM_PREFIX/var/log/mdm/
 MDM_RUN=$MDM_PREFIX/var/run/mdm/
