@@ -1,0 +1,15 @@
+diff -Nru3 ./src/XlibInt.c ../../libx11-1.0.3/src/XlibInt.c
+--- ./src/XlibInt.c	2006-06-29 23:41:23.000000000 -0300
++++ ../../libx11-1.0.3/src/XlibInt.c	2007-06-28 12:57:58.000000000 -0300
+@@ -129,11 +129,7 @@
+ #define ECHECK(err) (errno == err)
+ #define ESET(val)
+ #else
+-#ifdef ISC
+ #define ECHECK(err) ((errno == err) || ETEST())
+-#else
+-#define ECHECK(err) (errno == err)
+-#endif
+ #define ESET(val) errno = val
+ #endif
+ #endif
