@@ -3,12 +3,26 @@
 
 CC = gcc
 CFLAGS = -O2 -Wall
+VERSION = 0.0.1
 
 all: tree
 
 install: tree
 	@echo "Installing..."
-	misc/install.sh
+	@misc/install.sh
+
+ubuntu-8.04-install: ubuntu-8.04
+	@echo "Installing dependencies"
+	@cd distro/ubuntu-8.04/patches && make install
+	@echo "Installing the mdm package"
+	@dpkg -i packages/mdm_$(VERSION)_i386.deb
+
+ubuntu-8.04: tree
+	@echo "Creating .deb"
+	@cp -r tree ubuntu-8.04-tree
+	@cp -r distro/ubuntu-8.04/package/DEBIAN ubuntu-8.04-tree
+	@mkdir -p packages
+	@dpkg -b ubuntu-8.04-tree packages
 
 targz: tree
 	@echo "Creating .tar.gz file"
@@ -16,7 +30,7 @@ targz: tree
 
 tree: binaries prefix
 	@echo "Creating file tree in temporary folder tmp/"
-	misc/make-tree.sh
+	@misc/make-tree.sh
 
 prefix:
 	@if test ! -z "$(DESTDIR)"; then			\
@@ -31,5 +45,6 @@ binaries: bin/read-devices.c bin/write-message.c
 clean:
 	rm -f bin/read-devices
 	rm -f bin/write-message
-	rm -rf tmp
+	rm -rf *tree
+	rm -rf packages
 	rm -rf mdm.tar.gz

@@ -1,0 +1,8 @@
+Package: mdm
+Version: 0.0.1
+Section: universe/x11 
+Architecture: i386
+Priority: optional
+Depends: xserver-xorg-core, xserver-xephyr, xloadimage, discover (>=2.1), libx11-6, libxft2, libcairo2, libfreetype6
+Maintainer: C3SL Multiseat team (multiterminal@c3sl.ufpr.br)
+Description: This package contains the "multiseat display manager", a manager that makes the computer a multiseat computer. More info at http://wiki.c3sl.ufpr.br/multiseat

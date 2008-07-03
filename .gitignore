@@ -3,4 +3,5 @@
 bin/read-devices
 bin/write-message
 mdm.tar.gz
-tmp
+*tree
+packages

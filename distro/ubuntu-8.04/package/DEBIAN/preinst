@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
 # Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
@@ -18,11 +18,3 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
-# XXX: Run this script from the "root" directory of the repo
-
-set -e
-
-PREFIX=$(grep '^MDM_PREFIX' bin/mdm-common | cut -d'=' -f2)
-
-mkdir -p $PREFIX
-cp -r tree/* $PREFIX

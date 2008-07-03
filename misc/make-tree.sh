@@ -22,7 +22,7 @@ set -e
 
 # XXX: get these from mdm-common
 
-TARGET=tmp/
+TARGET=tree/
 BASE_DIR=/
 
 MDM_LOGS=$BASE_DIR/var/log/mdm/
