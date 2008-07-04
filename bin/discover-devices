@@ -38,11 +38,11 @@ function discover_input () {
 
     NUMBER_OF_DEVICES=$(grep '^I:' $PROC_DEVICES | wc -l)
     for(( i = 1; i <= ${NUMBER_OF_DEVICES}; i++ )); do
-	PHYS_ADDRS[i]=$(cat $PROC_DEVICES | grep '^P:' | \
+	PHYS_ADDRS[i]=$(grep '^P:' $PROC_DEVICES | \
 	                head -n $i | tail -n 1 | cut -d'=' -f2)
-	HANDLERS[i]=$(  cat $PROC_DEVICES | grep '^H:' | \
+	HANDLERS[i]=$(  grep '^H:' $PROC_DEVICES | \
 	                head -n $i | tail -n 1 | cut -d'=' -f2)
-	NAMES[i]=$(     cat $PROC_DEVICES | grep '^N:' | \
+	NAMES[i]=$(     grep '^N:' $PROC_DEVICES | \
 	                head -n $i | tail -n 1 | cut -d'=' -f2)
     done
 
