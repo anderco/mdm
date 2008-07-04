@@ -26,10 +26,10 @@ ubuntu-8.04: tree
 
 targz: tree
 	@echo "Creating .tar.gz file"
-	tar cvzf mdm.tar.gz tmp/*
+	tar cvzf mdm.tar.gz tree/*
 
 tree: binaries prefix
-	@echo "Creating file tree in temporary folder tmp/"
+	@echo "Creating file tree in temporary folder tree/"
 	@misc/make-tree.sh
 
 prefix:
