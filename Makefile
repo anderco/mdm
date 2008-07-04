@@ -22,7 +22,7 @@ ubuntu-8.04: tree
 	@cp -r tree ubuntu-8.04-tree
 	@cp -r distro/ubuntu-8.04/package/DEBIAN ubuntu-8.04-tree
 	@mkdir -p packages
-	@dpkg -b ubuntu-8.04-tree packages
+	@fakeroot dpkg -b ubuntu-8.04-tree packages
 
 targz: tree
 	@echo "Creating .tar.gz file"
