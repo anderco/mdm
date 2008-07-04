@@ -40,7 +40,7 @@ prefix:
 
 binaries: bin/read-devices.c bin/write-message.c
 	$(CC) $(CFLAGS) bin/read-devices.c -o bin/read-devices
-	$(CC) $(CFLAGS) bin/write-message.c -o bin/write-message `pkg-config --libs --cflags cairo freetype2 x11 xft`
+	$(CC) $(CFLAGS) bin/write-message.c -o bin/write-message `pkg-config --libs --cflags cairo x11`
 
 clean:
 	rm -f bin/read-devices
