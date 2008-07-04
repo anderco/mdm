@@ -18,19 +18,46 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
+# Ideally, this script should not exist.
+# It would also be good if "X -configure" did a good job.
+# But they are not enough, so we have to do this...
+# I hope someday X will by default open multiple screens without xorg.conf
+
 MDM_PREFIX=/
 MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
 MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
 source $MDM_INCLUDE
 
-NEW_FILE=$(X -configure 2>&1 | grep "^Your xorg.conf file is " | cut -d' ' -f5)
+function section_files () {
+echo '
+Section "Files"
+        RgbPath      "/etc/X11/rgb"
+        ModulePath   "/usr/lib/xorg/modules"
+        FontPath     "/usr/share/fonts/X11/misc"
+        FontPath     "/usr/share/fonts/X11/cyrillic"
+        FontPath     "/usr/share/fonts/X11/100dpi/:unscaled"
+        FontPath     "/usr/share/fonts/X11/75dpi/:unscaled"
+        FontPath     "/usr/share/fonts/X11/Type1"
+        FontPath     "/usr/share/fonts/X11/100dpi"
+        FontPath     "/usr/share/fonts/X11/75dpi"
+        FontPath     "/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType"
+EndSection' >> $MDM_XORG_CONF
+}
 
-mv $NEW_FILE $MDM_XORG_CONF
+function section_module () {
+echo '
+Section "Module"
+        Load  "record"
+        Load  "extmod"
+        Load  "dbe"
+        Load  "GLcore"
+        Load  "glx"
+        Load  "dri"
+        Load  "xtrap"
+EndSection' >> $MDM_XORG_CONF
+}
 
-# As far as I've tested, openchrome still doesn't work with multiple screens
-# (definition of "far": tested with via 0x3344 in June 2008)
-sed -i s/openchrome/vesa/g $MDM_XORG_CONF
-
+function section_server_flags () {
 echo '
 Section "ServerFlags"
     Option    "DontVTSwitch"       "yes"
@@ -42,3 +69,153 @@ Section "ServerFlags"
     # Option    "SuspendTime"  "0"
     # Option    "OffTime"      "0"
 EndSection' >> $MDM_XORG_CONF
+}
+
+function section_dri () {
+echo '
+Section "DRI"
+    Mode    0666
+EndSection' >> $MDM_XORG_CONF
+}
+
+function input_devices_sections () {
+
+if [ ! -z ${XKB_RULES[i]} ]; then
+    MY_XKB_RULES=${XKB_RULES[i]}
+else
+    MY_XKB_RULES=$DEFAULT_XKB_RULES
+fi
+if [ ! -z ${XKB_MODEL[i]} ]; then
+    MY_XKB_MODEL=${XKB_MODEL[i]}
+else
+    MY_XKB_MODEL=$DEFAULT_XKB_MODEL
+fi
+if [ ! -z ${XKB_LAYOUT[i]} ]; then
+    MY_XKB_LAYOUT=${XKB_LAYOUT[i]}
+else
+    MY_XKB_LAYOUT=$DEFAULT_XKB_LAYOUT
+fi
+
+echo "
+Section \"InputDevice\"
+        Identifier  \"Keyboard\"
+        Driver      \"kbd\"
+	Option      \"CoreKeyboard\"
+	Option      \"XkbRules\"  \"$MY_XKB_RULES\"
+	Option      \"XkbModel\"  \"$MY_XKB_MODEL\"
+	Option      \"XkbLayout\" \"$MY_XKB_LAYOUT\"
+EndSection " >> $MDM_XORG_CONF
+
+echo '
+Section "InputDevice"
+        Identifier  "Mouse"
+        Driver      "mouse"
+	Option      "CorePointer"
+        Option      "Protocol" "auto"
+        Option      "Device" "/dev/input/mice"
+        Option      "ZAxisMapping" "4 5 6 7"
+EndSection' >> $MDM_XORG_CONF
+}
+
+function video_sections () {
+
+# We're inside a loop 
+i=$1
+
+if [ ! -z ${MODE[i]} ]; then
+    SCREEN_SIZE=${MODE[i]}
+else
+    SCREEN_SIZE=$DEFAULT_MODE
+fi
+VIRTUAL_X=$(echo $SCREEN_SIZE | cut -d'x' -f1)
+VIRTUAL_Y=$(echo $SCREEN_SIZE | cut -d'x' -f2)
+
+# HorizSync and VertRefresh: if 'none' specified, don't write in xorg.conf
+if [ ! -z ${HORIZ_SYNC[i]} ]; then
+    MONITOR_HORIZ=${HORIZ_SYNC[i]}
+else
+    MONITOR_HORIZ=$DEFAULT_HORIZ_SYNC
+fi
+if [ ! -z ${VERT_REFRESH[i]} ]; then
+    MONITOR_VERT=${VERT_REFRESH[i]}
+else
+    MONITOR_VERT=$DEFAULT_VERT_REFRESH
+fi
+
+if [ "$MONITOR_HORIZ" = 'none' ]; then
+	MONITOR_HORIZ=''
+else
+	MONITOR_HORIZ="HorizSync $MONITOR_HORIZ"
+fi
+if [ "$MONITOR_VERT" = 'none' ]; then
+	MONITOR_VERT=''
+else
+	MONITOR_VERT="VertRefresh $MONITOR_VERT"
+fi
+
+echo "
+Section \"Device\"
+	Identifier	\"Video Card $i\"
+	BusID		\"PCI:${BUS_IDS[i-1]}\"
+	Driver		\"${DRIVERS[i-1]}\"
+EndSection
+
+Section \"Monitor\"
+	Identifier	\"Monitor $i\"
+	$MONITOR_HORIZ
+	$MONITOR_VERT
+	Option		\"DPMS\"
+EndSection
+
+Section \"Screen\"
+	Identifier	\"Screen $i\"
+	Device		\"Video Card $i\"
+	Monitor		\"Monitor $i\"
+	DefaultDepth	24
+	SubSection	\"Display\"
+		Depth	16
+		Modes	\"${SCREEN_SIZE}\"
+		Virtual	$VIRTUAL_X $VIRTUAL_Y
+	EndSubSection
+	SubSection	\"Display\"
+		Depth	24
+		Modes	\"${SCREEN_SIZE}\"
+		Virtual	$VIRTUAL_X $VIRTUAL_Y
+	EndSubSection
+EndSection" >> $MDM_XORG_CONF
+}
+
+function section_server_layout () {
+echo "
+Section \"ServerLayout\"
+	Identifier    \"X Configured\"
+" >> $MDM_XORG_CONF
+
+for (( i=1; i <= $N_CARDS; i++ )); do
+	echo "	Screen $((i-1)) \"Screen $i\"" >> $MDM_XORG_CONF
+done
+
+echo '
+	InputDevice    "Keyboard"
+	InputDevice    "Mouse"
+EndSection' >> $MDM_XORG_CONF
+}
+
+#####
+
+# They called our script, so they DO want a new xorg.conf
+rm -f $MDM_XORG_CONF
+
+N_CARDS=$($DISCOVER_DEVICES driver | wc -l)
+DRIVERS=($($DISCOVER_DEVICES driver | cut -f2))
+BUS_IDS=($($DISCOVER_DEVICES bus | cut -f2))
+
+section_files
+section_module
+section_server_flags
+section_dri
+input_devices_sections
+for (( c = 1; c <= $N_CARDS; c++)); do
+	video_sections $c
+done
+section_server_layout
