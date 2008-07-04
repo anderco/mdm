@@ -66,7 +66,7 @@ function select_keyboard () {
     while (( ! CREATED )); do
 	# Who are the keyboards?
 	KEYBOARDS=$($DISCOVER_DEVICES kevdev | cut -f2)
-	echo "    Keyboards = $KEYBOARDS" 1>&2
+	#echo "    Keyboards = $KEYBOARDS" 1>&2
 
 	# Remove used keyboards
 	REMOVE=$(stat -c %N $MDM_DEVICES/keyboard* 2> /dev/null|
@@ -74,7 +74,7 @@ function select_keyboard () {
 	for i in ${REMOVE}; do
 	    KEYBOARDS=`sed "s#$i# #g" <<< $KEYBOARDS`
 	done
-	echo "    ... after removing: Keyboards = $KEYBOARDS" 1>&2
+	#echo "    ... after removing: Keyboards = $KEYBOARDS" 1>&2
 	
 	if [ -z "$KEYBOARDS" ]; then
 	    # No keyboards. Hopefully someone will connect one.

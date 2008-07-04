@@ -39,7 +39,7 @@ function display_manager_start_monoseat () {
     # We assume $DISPLAY is already set here.
 
     X -config $MDM_XORG_CONF			\
-       -${CONNECTION_TYPE} ${CONNECTION_TARGET} &
+       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
 
     PID=$!
     echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
@@ -54,7 +54,7 @@ function display_manager_start_underneath_xserver () {
     # We assume $DISPLAY is already set here.
 
     # Without -noreset the configuration process doesn't work properly
-    X -noreset -config $MDM_XORG_CONF &
+    X -noreset -config $MDM_XORG_CONF 2>&1 &
     PID=$!
     echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
     
@@ -102,7 +102,7 @@ function display_manager_start_seat () {
     	    -mouse evdev,,device=$MOUSE					     \
 	    -keybd 							     \
 	     evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT \
-	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} &
+	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
 
     PID=$!
     echo $PID > $MDM_PIDS/Xephyr.${SEAT_NUMBER}.pid
