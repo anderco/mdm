@@ -90,12 +90,12 @@ function display_manager_start_seat () {
 	SCREEN_SIZE=$DEFAULT_MODE
     fi
 
-#    echo "Xephyr :${SEAT_NUMBER} -br					\
-#    	    -geometry ${SCREEN_SIZE}+0+0 				     \
-#    	    -mouse evdev,,device=$MOUSE					     \
-#	    -keybd 							     \
-#	     evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT \
-#	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} &"
+    echo "Xephyr :${SEAT_NUMBER} -br"
+    echo "       -geometry ${SCREEN_SIZE}+0+0"
+    echo "       -mouse evdev,,device=$MOUSE"
+    echo "       -keybd"
+    echo "      evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT"
+    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
 
     Xephyr :${SEAT_NUMBER} -br						     \
     	    -geometry ${SCREEN_SIZE}+0+0 				     \
