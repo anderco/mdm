@@ -101,7 +101,7 @@ Section \"InputDevice\"
         Identifier  \"Keyboard\"
         Driver      \"kbd\"
 	Option      \"CoreKeyboard\"
-	Option      \"XkbRules\"  \"$MY_XKB_RULES\"
+	#Option      \"XkbRules\"  \"$MY_XKB_RULES\"
 	Option      \"XkbModel\"  \"$MY_XKB_MODEL\"
 	Option      \"XkbLayout\" \"$MY_XKB_LAYOUT\"
 EndSection " >> $MDM_XORG_CONF
