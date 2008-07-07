@@ -43,7 +43,7 @@ function display_message () {
 	    $WRITE_MESSAGE "Press the F$2 key" 1>&2
 	    ;;
 	button_press)
-	    $WRITE_MESSAGE "Click left button" 1>&2
+	    $WRITE_MESSAGE "Press the left mouse button" 1>&2
 	    ;;
 	wait)
 	    $WRITE_MESSAGE "Please wait" 1>&2
