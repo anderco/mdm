@@ -37,6 +37,9 @@ function exec_start() {
     log --log-file-only "Multiseat Display Manager version $MDM_VERSION"
     log --log-file-only "Today is `date`."
 
+    # /var/run is re-created at every reboot
+    mkdir -p ${MDM_RUN}
+
     if ([ "$RECREATE_XORG_CONF" = 'yes' ] || [ ! -f "$MDM_XORG_CONF" ]); then
 	$CREATE_XORG_CONF
     fi
