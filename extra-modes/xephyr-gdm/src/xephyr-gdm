@@ -20,12 +20,14 @@
 
 # This configuration runs Xephyr on gdm, using gdmdynamic
 
+XEPHYR_WRAPPER=${MDM_SCRIPTS}/xephyr-wrapper
+
 RETRIES=2
 SLEEP=1
 GDMDYNAMIC="gdmdynamic -t $RETRIES -s $SLEEP"
 GDM_SOCKET='/var/run/gdm_socket'
-XAUTHORITY='/var/lib/gdm/:0.Xauth'
-XEPHYR_WRAPPER=${MDM_SCRIPTS}/xephyr-wrapper
+
+export XAUTHORITY='/var/lib/gdm/:0.Xauth'
 
 function display_manager_init () {
     # This function should stop running processes, remove logs, links, locks, or
