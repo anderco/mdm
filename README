@@ -2,43 +2,71 @@
 INSTALLING
 ==========
 
-First of all, read the "dependencies" file and install all of them.
+To install everything you have two options:
+ - you can just go to the "compiled" directory and install everything that is
+   already there (the easy way, but not guaranteed to be the most recent
+   version)
+ - or you can compile everything again and install them (the other way,
+   recommended)
 
-Choose your destination directory (where the files will be installed), and use
-the following command:
 
-$ make DESTDIR=/home/myUser/mdm-testing/ install
+= THE EASY WAY =
 
-You will also need a new Xephyr with the -geometry patch, and a patched Xlib so
-the Xephyr will not keep crashing. For ubutnu-8.04 users, do this:
+Change to the "compiled" directory.
+Change to your distribution's directory.
 
-$ cd distro/ubuntu-8.04
-$ make
+Install the packages in the following order:
+ - libx11-6
+ - xserver-xephyr
+ - mdm
+ - any mdm extra mode you might want
 
-Then install the xserver-xephyr and libx11-6 packages with "dpkg -i".
+For Debian/Ubuntu users, use "dpkg -i" to install a package
 
-You will also want to "hold" these packages so that apt will not replace them.
+Then, add the libx11-6 and xserver-xephyr packages to the "hold" state.
 
-For non-ubuntu users, apply the patches manually. They are located in the
-distro/generic directory.
+For Debian/Ubuntu users:
+echo "libx11-6 hold" | dpkg --set-selectionis
+echo "xserver-xephyr hold" | dpkg --set-selectionis
+
+
+= THE OTHER WAY =
+
+First, you need to install the "mdm" dependencies:
+ - xserver-xephyr with the "-geometry" patch
+ - libx11-6 with a patch to make Xephyr stop randomly crashing
+
+Go to the "dependencies" directory, then type 
+ - sudo make $(your-distribution-name)-install
+
+This command will download the sources, apply the patches and install the
+packages. It might take a while to do this.
+
+Now, go to the "mdm" directory, ans use the same command:
+ - sudo make $(your-distribution-name)-install
+
+Finally, if you need any extra modes, go to its directory and use the same
+command again:
+ - sudo make $(your-distribution-name)-install
+
 
 =======
 RUNNING
 =======
 
-Go to the directory previously chosen as the destination.
+First of all, stop gdm, kdm, xdm and your running X sessions.
+ - /etc/init.d/gdm stop
 
-Edit the mdm.conf file to adapt it to your needs:
+Then, edit the /etc/mdm/mdm.conf file to use your preferred mode with your
+custom settings
+ - vim /etc/mdm/mdm.conf
 
-$ vim ./etc/mdm/mdm.conf
-
-Run the service:
-
-$ ./etc/init.d/mdm start
+Finally, start mdm:
+ - /etc/init.d/mdm start
 
 To stop the service use:
 
-$ ./etc/init.d/mdm stop
+$ /etc/init.d/mdm stop
 
 ==========
 DEVELOPING
