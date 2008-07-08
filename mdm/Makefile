@@ -16,10 +16,11 @@ ubuntu-8.04-install: ubuntu-8.04
 	@dpkg -i packages/mdm_$(VERSION)_i386.deb
 
 ubuntu-8.04: tree
-	@echo "Creating .deb"
+	@echo "Creating ubuntu-8.04-tree"
 	@cp -r tree ubuntu-8.04-tree
 	@cp -r distro/ubuntu-8.04/DEBIAN ubuntu-8.04-tree
 	@mkdir -p packages
+	@echo "Creating .deb in packages/"
 	@fakeroot dpkg -b ubuntu-8.04-tree packages
 
 tree: binaries prefix
@@ -32,7 +33,7 @@ prefix:
 		misc/change-prefix.sh $(DESTDIR);		\
 	fi
 
-binaries: bin/read-devices.c bin/write-message.c
+binaries: src/read-devices.c src/write-message.c
 	$(CC) $(CFLAGS) src/read-devices.c -o src/read-devices
 	$(CC) $(CFLAGS) src/write-message.c -o src/write-message `pkg-config --libs --cflags cairo x11`
 

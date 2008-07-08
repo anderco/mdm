@@ -5,5 +5,4 @@ Architecture: i386
 Priority: optional
 Depends: mdm, gdm
 Maintainer: C3SL Multiseat team (multiterminal@c3sl.ufpr.br)
-Description: This package adds a new mode for the mdm package, which uses Xephyr
-over GDM. More info at http://wiki.c3sl.ufpr.br/multiseat
+Description: This package adds a new mode for the mdm package, which uses Xephy over GDM. More info at http://wiki.c3sl.ufpr.br/multiseat
