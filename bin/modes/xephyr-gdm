@@ -1,0 +1,118 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# This configuration runs Xephyr on gdm, using gdmdynamic
+
+RETRIES=2
+SLEEP=1
+GDMDYNAMIC="gdmdynamic -t $RETRIES -s $SLEEP"
+GDM_SOCKET='/var/run/gdm_socket'
+XAUTHORITY='/var/lib/gdm/:0.Xauth'
+XEPHYR_WRAPPER=${MDM_SCRIPTS}/xephyr-wrapper
+
+function display_manager_init () {
+    # This function should stop running processes, remove logs, links, locks, or
+    # anything your display manager might need.
+    # Consider calling display_manager_stop here if you don't need anything
+    # else.
+
+    # No problem if it's already running...
+    display_manager_stop
+
+    /etc/init.d/gdm start
+}
+
+function display_manager_start_monoseat () {
+    # This function is called when the computer has only 1 video card.
+    # You should open only 1 xserver and that's it: normal usage, not multiseat
+    # Do NOT configure devices or stuff like that
+    # We assume $DISPLAY is already set here.
+
+    $GDMDYNAMIC -a 0=XHandled
+    $GDMDYNAMIC -r 0
+}
+
+function display_manager_start_underneath_xserver () {
+    # In case we're using nested xservers (like Xephyr), we'll need to start an
+    # xserver to run the nested servers on top of it
+    # Don't put login screen on this server!
+    # We assume $DISPLAY is already set here.
+
+    $GDMDYNAMIC -a 0=XNotHandled
+    $GDMDYNAMIC -r 0
+}
+
+function display_manager_start_seat () {
+    # This is where we start the xserver that will have a login screen
+    # In case of multiseat with Xephyr, this function starts the Xephyrs and
+    # puts the login screens on them.
+    # We assume $DISPLAY is already set here.
+    # This function is called by mdm-start-seat, which gives you 2 variables:
+    # $KEYBOARD and $MOUSE, which point to evdev device nodes.
+    # $SEAT_NUMBER variable corresponds to the number that the user will have to
+    # press on the keyboard. Might be useful here.
+
+    if [ ! -z ${XKB_MODEL[SEAT_NUMBER]} ]; then
+	XKBMODEL=${XKB_MODEL[SEAT_NUMBER]}
+    else
+	XKBMODEL=$DEFAULT_XKB_MODEL
+    fi
+    if [ ! -z ${XKB_LAYOUT[SEAT_NUMBER]} ]; then
+	XKBLAYOUT=${XKB_LAYOUT[SEAT_NUMBER]}
+    else
+	XKBLAYOUT=$DEFAULT_XKB_LAYOUT
+    fi
+    if [ ! -z ${MODE[SEAT_NUBMER]} ]; then
+	SCREEN_SIZE=${MODE[SEAT_NUMBER]}
+    else
+	SCREEN_SIZE=$DEFAULT_MODE
+    fi
+
+    echo "Xephyr :${SEAT_NUMBER} -br"
+    echo "       -geometry ${SCREEN_SIZE}+0+0"
+    echo "       -mouse evdev,,device=$MOUSE"
+    echo "       -keybd"
+    echo "      evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT"
+    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
+
+
+
+    $GDMDYNAMIC "-a ${SEAT_NUMBER}=${XEPHYR_WRAPPER} -br :${SEAT_NUMBER}   \
+    	      -display $DISPLAY						   \
+	      -xauthority $XAUTHORITY					   \
+    	      -geometry ${SCREEN_SIZE}+0+0				   \
+    	      -mouse evdev,,device=$MOUSE				   \
+	      -keybd							   \
+	       evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT"
+    $GDMDYNAMIC -r ${SEAT_NUMBER}
+}
+
+function display_manager_stop () {
+    # This function should kill everything it has to kill, so that we REALLY
+    # stop all the seats, kill all the Xephyrs, remove locks, links and stuff
+    # like that.
+
+    if [ -e "$GDM_SOCKET" ]; then
+	SERVERS=($(gdmdynamic -l | tr ';' '\n'| cut -d':' -f2 | cut -d',' -f1))
+	for i in ${SERVERS[@]}; do
+	    $GDMDYNAMIC -d $i
+	done
+    fi
+}
