@@ -69,39 +69,28 @@ function display_manager_start_seat () {
     # In case of multiseat with Xephyr, this function starts the Xephyrs and
     # puts the login screens on them.
     # We assume $DISPLAY is already set here.
-    # This function is called by mdm-start-seat, which gives you 2 variables:
-    # $KEYBOARD and $MOUSE, which point to evdev device nodes.
-    # $SEAT_NUMBER variable corresponds to the number that the user will have to
-    # press on the keyboard. Might be useful here.
-
-    if [ ! -z ${XKB_MODEL[SEAT_NUMBER]} ]; then
-	XKBMODEL=${XKB_MODEL[SEAT_NUMBER]}
-    else
-	XKBMODEL=$DEFAULT_XKB_MODEL
-    fi
-    if [ ! -z ${XKB_LAYOUT[SEAT_NUMBER]} ]; then
-	XKBLAYOUT=${XKB_LAYOUT[SEAT_NUMBER]}
-    else
-	XKBLAYOUT=$DEFAULT_XKB_LAYOUT
-    fi
-    if [ ! -z ${MODE[SEAT_NUBMER]} ]; then
-	SCREEN_SIZE=${MODE[SEAT_NUMBER]}
-    else
-	SCREEN_SIZE=$DEFAULT_MODE
-    fi
+    # This function is called by mdm-start-seat, which gives you variables:
+    #   - $KEYBOARD and $MOUSE, which point to evdev device nodes.
+    #   - $SEAT_NUMBER variable corresponds to the number that the user will
+    #     have to press on the keyboard. Might be useful here.
+    #   - $MY_SCREEN_SIZE for the size of screen (needed when running nested
+    #     xservers)
+    #   - $MY_XKB_LAYOUT and $MY_XKB_MODEL, for the keyboard associated with the
+    #      seat
 
     echo "Xephyr :${SEAT_NUMBER} -br"
-    echo "       -geometry ${SCREEN_SIZE}+0+0"
+    echo "       -geometry ${MY_SCREEN_SIZE}+0+0"
     echo "       -mouse evdev,,device=$MOUSE"
     echo "       -keybd"
-    echo "      evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT"
+    echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
+    echo             "xkblayout=$MY_XKB_LAYOUT"
     echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
 
     Xephyr :${SEAT_NUMBER} -br						     \
-    	    -geometry ${SCREEN_SIZE}+0+0 				     \
+    	    -geometry ${MY_SCREEN_SIZE}+0+0 				     \
     	    -mouse evdev,,device=$MOUSE					     \
 	    -keybd 							     \
-	     evdev,,device=$KEYBOARD,xkbmodel=$XKBMODEL,xkblayout=$XKBLAYOUT \
+     evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT \
 	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
 
     PID=$!

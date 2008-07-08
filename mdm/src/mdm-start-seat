@@ -55,6 +55,26 @@ function display_message () {
 
 }
 
+function parse_config_file () {
+
+    if [ ! -z ${XKB_MODEL[SEAT_NUMBER]} ]; then
+        MY_XKB_MODEL=${XKB_MODEL[SEAT_NUMBER]}
+    else
+        MY_XKB_MODEL=$DEFAULT_XKB_MODEL
+    fi
+    if [ ! -z ${XKB_LAYOUT[SEAT_NUMBER]} ]; then
+        MY_XKB_LAYOUT=${XKB_LAYOUT[SEAT_NUMBER]}
+    else
+        MY_XKB_LAYOUT=$DEFAULT_XKB_LAYOUT
+    fi
+    if [ ! -z ${MODE[SEAT_NUBMER]} ]; then
+        MY_SCREEN_SIZE=${MODE[SEAT_NUMBER]}
+    else
+        MY_SCREEN_SIZE=$DEFAULT_MODE
+    fi
+
+}
+
 function select_keyboard () {
     if [ -e "${MDM_DEVICES}/keyboard${SEAT_NUMBER}" ]; then
 	return
@@ -198,6 +218,8 @@ function select_mouse () {
 
     MOUSE="${MDM_DEVICES}/mouse${SEAT_NUMBER}"
 }
+
+parse_config_file
 
 KEYBOARD=
 MOUSE=

@@ -44,12 +44,17 @@ function display_manager_start_underneath_xserver () {
 function display_manager_start_seat () {
     # This is where we start the xserver that will have a login screen
     # In case of multiseat with Xephyr, this function starts the Xephyrs and
-    # put the login screens on them.
+    # puts the login screens on them.
     # We assume $DISPLAY is already set here.
-    # This function is called by mdm-start-seat, which gives you 2 variables:
-    # $KEYBOARD and $MOUSE, which point to evdev device nodes.
-    # $SEAT_NUMBER variable corresponds to the number that the user will have to
-    # press on the keyboard. Might be useful to use.
+    # This function is called by mdm-start-seat, which gives you variables:
+    #   - $KEYBOARD and $MOUSE, which point to evdev device nodes.
+    #   - $SEAT_NUMBER variable corresponds to the number that the user will
+    #     have to press on the keyboard. Might be useful here.
+    #   - $MY_SCREEN_SIZE for the size of screen (needed when running nested
+    #     xservers)
+    #   - $MY_XKB_LAYOUT and $MY_XKB_MODEL, for the keyboard associated with the
+    #      seat
+
 }
 
 function display_manager_stop () {
