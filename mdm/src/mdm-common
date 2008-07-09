@@ -72,7 +72,7 @@ function rotate_log () {
 }
 
 function select_display_manager () {
-    source $MDM_MODES/$DISPLAY_MANAGER
+    source $MDM_MODES/$MULTISEAT_MODE
 }
 
 #####
