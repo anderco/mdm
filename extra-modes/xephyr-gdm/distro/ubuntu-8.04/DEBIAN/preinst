@@ -24,5 +24,6 @@ GDM_CONF1=/etc/gdm/gdm.conf
 GDM_CONF2=/etc/gdm/gdm.conf-custom
 
 for file in $GDM_CONF1 $GDM_CONF2; do
-    dpkg-divert --package mdm-xephyr-gdm --divert $file.distrib --rename $file
+    dpkg-divert --package mdm-xephyr-gdm --add --rename \
+		--divert $file.real $file
 done

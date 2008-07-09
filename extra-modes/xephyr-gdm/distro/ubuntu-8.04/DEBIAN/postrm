@@ -23,6 +23,8 @@ set -e
 GDM_CONF1=/etc/gdm/gdm.conf
 GDM_CONF2=/etc/gdm/gdm.conf-custom
 
-for file in $GDM_CONF1 $GDM_CONF2; do
-    dpkg-divert --package mdm-xephyr-gdm --rename --remove $file
-done
+if [ "$1" = 'remove' ]; then
+    for file in $GDM_CONF1 $GDM_CONF2; do
+	dpkg-divert --package mdm-xephyr-gdm --rename --remove $file
+    done
+fi
