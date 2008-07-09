@@ -2,13 +2,13 @@ What you'll need to compile/use the package:
 
 Using the package:
 	An X server
-	libcairo2, libfreetype, libx11, libxft
+	libcairo2, libx11
 	The xsetbg binary
 	The discover package
 
 Compiling binaries:
 	all: gcc
-	write-message: libcairo2-dev libx11-dev freetype6-dev libxft-dev
+	write-message: libcairo2-dev libx11-dev
 
 Patching packages:
 	debian-like:
@@ -18,13 +18,10 @@ Patching packages:
 		dpkg
 
 Packaging stuff:
-	generic:
-		tar, gzip
 	ubuntu:
 		dpkg
 
 Debian/Ubuntu users do this:
 $ apt-get source xserver-xephyr
 $ apt-get source libx11-6
-$ apt-get install libcairo2 libcairo2-dev libfreetype6 libfreetype6-dev \
-                  libx11-dev libxft-dev xloadimage discover
+$ apt-get install libcairo2 libcairo2-dev libx11-dev xloadimage discover
