@@ -10,6 +10,9 @@ ubuntu-8.04: tree
 	@echo "Creating ubuntu-8.04-tree"
 	@cp -r tree ubuntu-8.04-tree
 	@cp -r distro/ubuntu-8.04/DEBIAN ubuntu-8.04-tree
+	@echo "Applying patches"
+	@cd ubuntu-8.04-tree && \
+		patch -p1 < ../distro/ubuntu-8.04/gdm.conf.patch
 	@mkdir -p packages
 	@echo "Creating .deb in packages/"
 	@fakeroot dpkg -b ubuntu-8.04-tree packages
