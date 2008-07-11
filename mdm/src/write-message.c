@@ -26,7 +26,12 @@
 int main(int argc, char *argv[])
 {
     Display *display = XOpenDisplay(NULL);
-    
+    if(display == NULL)
+    {
+        fprintf(stderr, "Cannot open diplay.\n");
+        exit(1);
+    }
+
     int i;
     int screen_num = DefaultScreen(display);
     int display_width = DisplayWidth(display, screen_num);
