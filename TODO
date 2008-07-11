@@ -1,3 +1,41 @@
-Add internationalization support to the messages written on the screen.
+On-going tasks:
+Aramis: Add support for cards with multiple outputs
+Lucas:  Remove the need for patched Xephyr
+Paulo: everything else (currently, everything not related to code writing)
 
-egrep -r "(TODO|XXX|FIXME)" *
+Test a lot!
+Improve write_message.c. Add error checking.
+Add internationalization support to the messages written on the screen.
+Change discover_devices:
+	- find a better way to detect input devices (HAL?)
+	- find a better way to detect video cards (Xorg?)
+Fix the ugly Makefiles
+Remove the need for patched libx11
+Create a debian repository for users who don't want to compile stuff
+Update the wiki to reflect our changes!
+Fix the "? /" abnt2 key (in X)
+Fix ctrl+alt+backspace in Xephyr
+Tell everyone about the package
+Update this document.
+Don't use the "background" or integrate it to "write-message.c" (it is useless
+for now)
+Improve documentation!
+Add script to detect dependencies?
+Fix the problem with "mdm stop" (talk to Paulo for more info about this)
+Put dependency on Xserver >= 1.4
+Remove the "only 1 video card: not using multiseat" messsage from the console
+because it makes the lib/lsb/init-functions output ugly
+Change the "/etc/init.d/gdm start" in mode xephyr-gdm becaus eit makes the
+init-functions output ugly too
+See if our distribution's "gdm.conf" is like the distribution sets it, and make
+patches for gdm.conf when needed.
+Create a mode that uses VNC!
+Create other useful modes for UFPR informatics department (sibi, provas, boca,
+fradim-machines)
+Be sure that our package works with other architectures, and add them on
+DEBIAN/config and other files
+Make versions for other distros!
+Add different behavior for things like "--purge" on debian {pre,post}{inst,rm}
+Make people READ, USE and UPDATE this file!
+
+echo "$(egrep -r "(TODO|XXX|FIXME)" *)"
