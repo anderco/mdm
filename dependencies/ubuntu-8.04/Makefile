@@ -12,7 +12,7 @@ LIBX11_DEB_PKG      = libx11-6_1.1.3-1ubuntu2_i386.deb
 
 install: xephyr libx11
 	dpkg -i $(XEPHYR_DEB_PKG)
-	echo "$(LIBX11_PACKAGE_NAME) hold" | dpkg --set-selections
+	echo "$(XEPHYR_PACKAGE_NAME) hold" | dpkg --set-selections
 	dpkg -i $(LIBX11_DEB_PKG)
 	echo "$(LIBX11_PACKAGE_NAME) hold" | dpkg --set-selections
 
