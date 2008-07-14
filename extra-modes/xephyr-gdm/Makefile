@@ -6,6 +6,19 @@ install: tree
 	@echo "Installing..."
 	@misc/install.sh $(DESTDIR)
 
+
+debian-lenny-install: debian-lenny
+	@echo "Installing the mdm-xephyr-gdm package"
+	@dpkg -i packages/mdm-xephyr-gdm_$(VERSION)_i386.deb
+
+debian-lenny: tree
+	@echo "Creating debian-lenny-tree"
+	@cp -r tree debian-lenny-tree
+	@cp -r distro/debian-lenny/DEBIAN debian-lenny-tree
+	@mkdir -p packages
+	@echo "Creating .deb in packages/"
+	@fakeroot dpkg -b debian-lenny-tree packages
+
 ubuntu-8.04-install: ubuntu-8.04
 	@echo "Installing the mdm-xephyr-gdm package"
 	@dpkg -i packages/mdm-xephyr-gdm_$(VERSION)_i386.deb

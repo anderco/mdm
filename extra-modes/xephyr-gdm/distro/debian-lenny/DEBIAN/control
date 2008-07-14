@@ -1,0 +1,8 @@
+Package: mdm-xephyr-gdm
+Version: 0.0.1
+Section: universe/x11 
+Architecture: i386
+Priority: optional
+Depends: mdm, gdm
+Maintainer: C3SL Multiseat team (multiterminal@c3sl.ufpr.br)
+Description: This package adds a new mode for the mdm package, which uses Xephy over GDM. More info at http://wiki.c3sl.ufpr.br/multiseat
