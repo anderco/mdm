@@ -26,8 +26,8 @@ For Debian/Ubuntu users, use "dpkg -i" to install a package
 Then, add the libx11-6 and xserver-xephyr packages to the "hold" state.
 
 For Debian/Ubuntu users:
-echo "libx11-6 hold" | dpkg --set-selectionis
-echo "xserver-xephyr hold" | dpkg --set-selectionis
+echo "libx11-6 hold" | dpkg --set-selections
+echo "xserver-xephyr hold" | dpkg --set-selections
 
 
 = THE OTHER WAY =
