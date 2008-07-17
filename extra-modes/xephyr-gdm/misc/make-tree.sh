@@ -26,7 +26,6 @@ TARGET=tree/
 BASE_DIR=/
 
 MDM_SHARE=$BASE_DIR/usr/share/mdm/
-MDM_SCRIPTS=$BASE_DIR/usr/sbin/
 
 MDM_MODES=$MDM_SHARE/modes/
 
@@ -36,14 +35,12 @@ rm -rf   $TARGET
 mkdir -p $TARGET
 
 mkdir -p $TARGET/$MDM_SHARE
-mkdir -p $TARGET/$MDM_SCRIPTS
 
 mkdir -p $TARGET/$MDM_MODES
 
 mkdir -p $TARGET/$GDM_CONF
 
-cp src/xephyr-gdm		$TARGET/$MDM_MODES/
-cp src/xephyr-wrapper		$TARGET/$MDM_SCRIPTS/
+cp src/xephyr-gdm		    $TARGET/$MDM_MODES/
 
 # Yes, 2 files.
 cp gdm-config/gdm.conf-custom	$TARGET/$GDM_CONF/

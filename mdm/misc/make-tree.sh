@@ -50,14 +50,16 @@ mkdir -p $TARGET/$MDM_DEVICES
 mkdir -p   $TARGET/$INITD
 cp src/mdm $TARGET/$INITD
 
-cp src/mdm-bin          $TARGET/$MDM_SCRIPTS/mdm-bin
-cp src/mdm-common       $TARGET/$MDM_SCRIPTS/mdm-common
-cp src/mdm-start-seat   $TARGET/$MDM_SCRIPTS/mdm-start-seat
-cp src/create-xorg-conf $TARGET/$MDM_SCRIPTS/create-xorg-conf
-cp src/write-message    $TARGET/$MDM_SCRIPTS/write-message
-cp src/read-devices     $TARGET/$MDM_SCRIPTS/read-devices
-cp src/discover-devices $TARGET/$MDM_SCRIPTS/discover-devices
-cp misc/background.png  $TARGET/$MDM_SHARE/background.png
-cp -r modes		$TARGET/$MDM_SHARE/modes
-cp config/mdm.conf      $TARGET/$MDM_ETC/mdm.conf
+cp src/mdm-bin                  $TARGET/$MDM_SCRIPTS/mdm-bin
+cp src/mdm-common               $TARGET/$MDM_SCRIPTS/mdm-common
+cp src/mdm-start-seat           $TARGET/$MDM_SCRIPTS/mdm-start-seat
+cp src/create-xorg-conf         $TARGET/$MDM_SCRIPTS/create-xorg-conf
+cp src/write-message            $TARGET/$MDM_SCRIPTS/write-message
+cp src/xephyr-wrapper           $TARGET/$MDM_SCRIPTS/xephyr-wrapper
+cp src/xephyr-parent-window     $TARGET/$MDM_SCRIPTS/xephyr-parent-window
+cp src/read-devices             $TARGET/$MDM_SCRIPTS/read-devices
+cp src/discover-devices         $TARGET/$MDM_SCRIPTS/discover-devices
+cp misc/background.png          $TARGET/$MDM_SHARE/background.png
+cp -r modes		        $TARGET/$MDM_SHARE/modes
+cp config/mdm.conf              $TARGET/$MDM_ETC/mdm.conf
 

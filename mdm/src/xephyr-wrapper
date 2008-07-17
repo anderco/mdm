@@ -18,21 +18,33 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
+MDM_PREFIX=/
+MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
+
+XEPHYR_PARENT_WINDOW=${MDM_SCRIPTS}/xephyr-parent-window
+
 while (( $# > 0 )); do
     case "$1" in
         -xauthority)
-	    export XAUTHORITY=$2
-	    shift 2
-	    ;;
-	-display)
-	    export DISPLAY=$2
-	    shift 2
-	    ;;
-	*)
-	    XEPHYR_ARGS="$XEPHYR_ARGS $1"
-	    shift 1
-	    ;;
+            export XAUTHORITY=$2
+            shift 2
+            ;;
+        -display)
+            export DISPLAY=$2
+            shift 2
+            ;;
+        -geometry)
+            ${XEPHYR_PARENT_WINDOW} $2 "xephyr_parent_window${DISPLAY}" &
+            WINDOW_ID=$(xwininfo -name "xephyr_parent_window${DISPLAY}" | grep "Window id" | cut -d' ' -f4)
+            XEPHYR_ARGS="$XEPHYR_ARGS -parent $WINDOW_ID"
+            shift 2
+            ;; 
+        *)
+            XEPHYR_ARGS="$XEPHYR_ARGS $1"
+            shift 1
+            ;;
     esac
 done
 
 exec Xephyr $XEPHYR_ARGS
+                                                                                                

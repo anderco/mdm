@@ -23,6 +23,7 @@
 # TODO: use XAUTHORITY correctly, we MUST have a secure environment
 
 XAUTH_FILE=${MDM_RUN}/Xauth
+XEPHYR_WRAPPER=${MDM_SCRIPTS}/xephyr-wrapper
 
 function display_manager_init () {
     # This function should stop running processes, remove logs, links, locks, or
@@ -78,7 +79,7 @@ function display_manager_start_seat () {
     #   - $MY_XKB_LAYOUT and $MY_XKB_MODEL, for the keyboard associated with the
     #      seat
 
-    echo "Xephyr :${SEAT_NUMBER} -br"
+    echo "xephyr-wrapper  :${SEAT_NUMBER} -br"
     echo "       -geometry ${MY_SCREEN_SIZE}+0+0"
     echo "       -mouse evdev,,device=$MOUSE"
     echo "       -keybd"
@@ -86,7 +87,7 @@ function display_manager_start_seat () {
     echo             "xkblayout=$MY_XKB_LAYOUT"
     echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
 
-    Xephyr :${SEAT_NUMBER} -br						     \
+    $XEPHYR_WRAPPER :${SEAT_NUMBER} -br						     \
     	    -geometry ${MY_SCREEN_SIZE}+0+0 				     \
     	    -mouse evdev,,device=$MOUSE					     \
 	    -keybd 							     \
