@@ -25,33 +25,43 @@
 
 int main(int argc, char *argv[])
 {
-    Display *display = XOpenDisplay(NULL);
+    int i;
+    int screen_num;
+    int display_width;
+    int display_height;
+    double y_all_extents = 0.0;
+    double x,y;
+    unsigned long valuemask = 0;       
+    
+    Display *display;
+    Window win;
+    GC gc;
+    
+    XImage *image;
+    XGCValues values;         
+    Visual *visual;
+    
+    cairo_text_extents_t extents;
+    cairo_surface_t *surface;
+    cairo_t *cr;
+    
+    display = XOpenDisplay(NULL);
     if(display == NULL)
     {
         fprintf(stderr, "Cannot open diplay.\n");
         exit(1);
     }
+    
+    screen_num = DefaultScreen(display);
+    
+    win = DefaultRootWindow(display);
+    gc = XCreateGC(display, win, valuemask, &values);
+    display_width = DisplayWidth(display, screen_num);
+    display_height = DisplayHeight(display, screen_num);
+    visual = DefaultVisual(display, screen_num);
 
-    int i;
-    int screen_num = DefaultScreen(display);
-    int display_width = DisplayWidth(display, screen_num);
-    int display_height = DisplayHeight(display, screen_num);
-    double y_all_extents = 0.0;
-    double x,y;
-    unsigned long valuemask = 0;       
-    
-    XGCValues values;         
-    
-    Visual *visual = DefaultVisual(display, screen_num);
-    Window win = DefaultRootWindow(display);
-    GC gc = XCreateGC(display, win, valuemask, &values);
-
-    cairo_text_extents_t extents;
-    cairo_surface_t *surface;
-    cairo_t *cr;
-    
-    XImage *image = XCreateImage(display, visual, 1 , XYBitmap, 0, "black",
-                                 display_width, display_height, 8, 0);
+    image = XCreateImage(display, visual, 1 , XYBitmap, 0, "black",
+                         display_width, display_height, 8, 0);
     
     XPutImage(display, win, gc, image, 0, 0, 0, 0, 
               display_width, display_height);
