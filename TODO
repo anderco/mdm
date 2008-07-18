@@ -1,10 +1,9 @@
 On-going tasks:
 Aramis: Add support for cards with multiple outputs
-Lucas:  Remove the need for patched Xephyr
+Lucas:  Upgrade discover-devices
 Paulo: everything else (currently, everything not related to code writing)
 
 Test a lot!
-Improve write_message.c. Add error checking.
 Add internationalization support to the messages written on the screen.
 Change discover_devices:
 	- find a better way to detect input devices (HAL?)
@@ -25,7 +24,7 @@ Fix the problem with "mdm stop" (talk to Paulo for more info about this)
 Put dependency on Xserver >= 1.4
 Remove the "only 1 video card: not using multiseat" messsage from the console
 because it makes the lib/lsb/init-functions output ugly
-Change the "/etc/init.d/gdm start" in mode xephyr-gdm becaus eit makes the
+Change the "/etc/init.d/gdm start" in mode xephyr-gdm because it makes the
 init-functions output ugly too
 See if our distribution's "gdm.conf" is like the distribution sets it, and make
 patches for gdm.conf when needed.
