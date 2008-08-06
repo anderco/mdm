@@ -72,7 +72,7 @@ function exec_start() {
     display_manager_init
 
     if [ "$SEATS" = "1" ]; then
-	log "Only 1 video card: not using multiseat"
+	log --log-file-only "Only 1 video card: not using multiseat"
 	display_manager_start_monoseat >> $MY_LOG 2>&1
 
     else
