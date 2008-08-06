@@ -10,6 +10,18 @@ To install everything you have two options:
    recommended)
 
 
+= Dependencies =
+
+To compile the packages, you'll need these packages:
+git-core build-essential pkg-config libcairo2-dev fakeroot
+
+To install mdm, you'll need this package:
+xloadimage
+
+To build the patched libx11-6, you'll need to download its building dependencies
+too.
+
+
 = THE EASY WAY =
 
 Change to the "compiled" directory.
@@ -17,32 +29,29 @@ Change to your distribution's directory.
 
 Install the packages in the following order:
  - libx11-6
- - xserver-xephyr
  - mdm
  - any mdm extra mode you might want
 
 For Debian/Ubuntu users, use "dpkg -i" to install a package
 
-Then, add the libx11-6 and xserver-xephyr packages to the "hold" state.
+Then, add the libx11-6 package to the "hold" state.
 
 For Debian/Ubuntu users:
 echo "libx11-6 hold" | dpkg --set-selections
-echo "xserver-xephyr hold" | dpkg --set-selections
-
 
 = THE OTHER WAY =
 
-First, you need to install the "mdm" dependencies:
- - xserver-xephyr with the "-geometry" patch
+First, you need to install the "mdm" dependency:
  - libx11-6 with a patch to make Xephyr stop randomly crashing
 
 Go to the "dependencies" directory, then type 
- - sudo make $(your-distribution-name)-install
+ - cd $(your-distribution-name)
+ - sudo make install
 
 This command will download the sources, apply the patches and install the
 packages. It might take a while to do this.
 
-Now, go to the "mdm" directory, ans use the same command:
+Now, go to the "mdm" directory, and use the same command:
  - sudo make $(your-distribution-name)-install
 
 Finally, if you need any extra modes, go to its directory and use the same
@@ -66,7 +75,7 @@ Finally, start mdm:
 
 To stop the service use:
 
-$ /etc/init.d/mdm stop
+# /etc/init.d/mdm stop
 
 ==========
 DEVELOPING

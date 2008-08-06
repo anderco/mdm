@@ -1,27 +1,28 @@
 What you'll need to compile/use the package:
 
 Using the package:
-	An X server
-	libcairo2, libx11
-	The xsetbg binary
-	The discover package
+ - an X server, libcairo2, libx11, the 'xsetbg' binary, the 'discover' binary
 
 Compiling binaries:
-	all: gcc
-	write-message: libcairo2-dev libx11-dev
+- gcc libcairo2-dev libx11-dev
 
 Patching packages:
-	debian-like:
-		libx11: "apt-get build-dep libx11-6"
-		Xephyr: "apt-get build-dep xserver-xephyr"
-		fakeroot
-		dpkg
+  - Debian-like distros:
+    - libx11: "apt-get build-dep libx11-6", fakeroot, dpkg
 
 Packaging stuff:
-	ubuntu:
-		dpkg
+  - Debian-like distros:
+    - dpkg fakeroot
 
-Debian/Ubuntu users do this:
-$ apt-get source xserver-xephyr
-$ apt-get source libx11-6
-$ apt-get install libcairo2 libcairo2-dev libx11-dev xloadimage discover
+-----
+
+Debian/Ubuntu users should do this:
+
+For libx11-6:
+# apt-get build-dep libx11-6
+
+For compiling:
+# apt-get install git-core build-essential pkg-config libcairo2-dev fakeroot
+
+For using:
+# apt-get install xloadimage
