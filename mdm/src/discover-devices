@@ -98,7 +98,20 @@ function video_cards () {
 	       | sed 's/^$/vesa/g'))
 
     for (( i = 0; i < ${#VENDOR_IDS[@]}; i++)); do
-	BUS_IDS[i]=$(lspci -d ${VENDOR_IDS[i]}:${MODEL_IDS[i]} | cut -d' ' -f1)
+        # If there are multiple cards with the same IDs, lspci will print
+	# multiple lines
+
+	# See how many times we already used these IDs:
+	TIMES_USED=0
+	for (( j=0; j < i; j++)); do
+	    if ( [ "${VENDOR_IDS[j]}" = "${VENDOR_IDS[i]}" ] &&
+	         [ "${MODEL_IDS[j]}"  = "${MODEL_IDS[i]}"  ] ); then
+		 TIMES_USED=$((TIMES_USED+1))
+	    fi
+	done
+
+	BUS_IDS[i]=$(lspci -d ${VENDOR_IDS[i]}:${MODEL_IDS[i]} | 
+		     cut -d' ' -f1 | head -n $((TIMES_USED+1)) | tail -n 1)
     done
 
     for (( i=0 ; i < ${#BUS_IDS[@]}; i++ )) ; do
