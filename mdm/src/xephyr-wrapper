@@ -20,8 +20,13 @@
 
 MDM_PREFIX=/
 MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
+MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
+source $MDM_INCLUDE
 
 XEPHYR_PARENT_WINDOW=${MDM_SCRIPTS}/xephyr-parent-window
+
+kill `cat ${MDM_PIDS}/xephyr-parent-window${DISPLAY}.pid 2> /dev/null`
+rm -f ${MDM_PIDS}/xephyr-parent-window${DISPLAY}.pid 2> /dev/null
 
 while (( $# > 0 )); do
     case "$1" in
@@ -35,6 +40,9 @@ while (( $# > 0 )); do
             ;;
         -geometry)
             ${XEPHYR_PARENT_WINDOW} $2 "xephyr_parent_window${DISPLAY}" &
+            PID=$!
+            echo $PID > ${MDM_PIDS}/xephyr-parent-window${DISPLAY}.pid
+            
             WINDOW_ID=$(xwininfo -name "xephyr_parent_window${DISPLAY}" | grep "Window id" | cut -d' ' -f4)
             XEPHYR_ARGS="$XEPHYR_ARGS -parent $WINDOW_ID"
             shift 2
