@@ -1,7 +1,7 @@
 What you'll need to compile/use the package:
 
 Using the package:
- - an X server, libcairo2, libx11, the 'xsetbg' binary, the 'discover' binary
+ - an X server, libcairo2, libx11, the 'discover' binary
 
 Compiling binaries:
 - gcc libcairo2-dev libx11-dev
@@ -23,6 +23,3 @@ For libx11-6:
 
 For compiling:
 # apt-get install git-core build-essential pkg-config libcairo2-dev fakeroot
-
-For using:
-# apt-get install xloadimage

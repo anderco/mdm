@@ -15,12 +15,8 @@ To install everything you have two options:
 To compile the packages, you'll need these packages:
 git-core build-essential pkg-config libcairo2-dev fakeroot
 
-To install mdm, you'll need this package:
-xloadimage
-
 To build the patched libx11-6, you'll need to download its building dependencies
 too.
-
 
 = THE EASY WAY =
 

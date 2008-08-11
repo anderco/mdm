@@ -30,8 +30,6 @@ source $MDM_INCLUDE
 
 READ_DEVICES=${MDM_SCRIPTS}/read-devices
 WRITE_MESSAGE=${MDM_SCRIPTS}/write-message
-IMAGE_FILE=${MDM_SHARE}/background.png
-PUT_IMAGE="xsetbg -fullscreen"
 
 SEAT_NUMBER=$1
 
@@ -228,9 +226,6 @@ while (( 1 )); do
     #log --log-file-only "Configuring devices..."
     echo -e "\n--"
     echo "Configuring seat:"
-
-    # Put image on the background
-    $PUT_IMAGE $IMAGE_FILE
 
     echo "  selecting keyboard"
     select_keyboard

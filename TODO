@@ -2,7 +2,7 @@
 On-going tasks:
 
 Aramis: adding support for cards with multiple outputs
-Lucas: fixing a bug with the "xephyr parent window"
+Lucas: Creating new Live-CD
 Paulo: documenting, TODO editing, small fixes
 
 -----------------
@@ -10,10 +10,6 @@ Easy/small tasks:
 
 - Fix the ugly Makefiles
 - Add internationalization support to the messages written on the screen.
-- Don't use the "background" or integrate it to "write-message.c" (it is useless
-  for now). For this, you'll have to remove code, fix make-tree.sh, remove the
-  image file, remove stuff from Debian control files, fix makefiles, fix every
-  possible document and other remaining stuff.
 - Add a script to detect the dependencies? (decide if needed)
 - Change the "/etc/init.d/gdm start" in mode xephyr-gdm because it makes the
   init-functions output ugly too

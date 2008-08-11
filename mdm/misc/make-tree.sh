@@ -59,7 +59,6 @@ cp src/xephyr-wrapper           $TARGET/$MDM_SCRIPTS/
 cp src/xephyr-parent-window     $TARGET/$MDM_SCRIPTS/
 cp src/read-devices             $TARGET/$MDM_SCRIPTS/
 cp src/discover-devices         $TARGET/$MDM_SCRIPTS/
-cp misc/background.png          $TARGET/$MDM_SHARE/
 cp -r modes                     $TARGET/$MDM_SHARE/
 cp config/mdm.conf              $TARGET/$MDM_ETC/
 
