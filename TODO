@@ -17,6 +17,7 @@ Easy/small tasks:
   make patches for gdm.conf if needed.
 - Change Ubuntu's libx11 patch (use fd.o's bug #6820 latest patch)
 - Change Debian-based way to discover drivers (use driver.ids files)
+- Every time we call X, wait for SIGUSR1.
 
 ------------------
 Medium/hard tasks:
@@ -33,6 +34,8 @@ Medium/hard tasks:
   community
 - Create a mailing list
 - Use some kind of bug tracking system
+- mdm package should not depend on Xephyr. Remove it and make a separate mode
+  for xephyr-xdmcp. This way, mdm will have no "default" modes.
 
 
 ---------------------------------------------------------------------
