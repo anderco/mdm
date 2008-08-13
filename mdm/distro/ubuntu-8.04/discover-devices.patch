@@ -1,0 +1,54 @@
+diff -Nru tree/usr/sbin/discover-devices ubuntu-8.04-tree/usr/sbin/discover-devices
+--- tree/usr/sbin/discover-devices	2008-08-13 15:35:08.000000000 -0300
++++ ubuntu-8.04-tree/usr/sbin/discover-devices	2008-08-13 15:36:10.000000000 -0300
+@@ -26,7 +26,6 @@
+ # TODO: we should stop using /proc and "discover". We should use HAL and X!
+ 
+ PROC_DEVICES=/proc/bus/input/devices
+-DISCOVER=/sbin/discover
+ 
+ # This function prints the physical addresses of the mice found
+ function discover_input () {
+@@ -87,31 +86,20 @@
+ }
+ 
+ # Prints bus address and drivers of the video cards.
++# This function will work only on system that have the ids files in
++# /usr/share/xserver-xorg/pci. AFAIK, only Debian and Ubuntu.
+ function video_cards () {
+ 
+-    # calling discover is way toooooo slow!
+-    OUTPUT=$($DISCOVER -t display --vendor-id --model-id)
+-    VENDOR_IDS=($(echo "$OUTPUT" | cut -d' ' -f1))
+-    MODEL_IDS=($( echo "$OUTPUT" | cut -d' ' -f2))
+-    # There can be empty lines on "drivers"
+-    DRIVERS=($($DISCOVER -t display --data-path=xfree86/server/device/driver \
+-	       | sed 's/^$/vesa/g'))
+-
+-    for (( i = 0; i < ${#VENDOR_IDS[@]}; i++)); do
+-        # If there are multiple cards with the same IDs, lspci will print
+-	# multiple lines
+-
+-	# See how many times we already used these IDs:
+-	TIMES_USED=0
+-	for (( j=0; j < i; j++)); do
+-	    if ( [ "${VENDOR_IDS[j]}" = "${VENDOR_IDS[i]}" ] &&
+-	         [ "${MODEL_IDS[j]}"  = "${MODEL_IDS[i]}"  ] ); then
+-		 TIMES_USED=$((TIMES_USED+1))
+-	    fi
+-	done
++    IDS_BY_DRIVER=/usr/share/xserver-xorg/pci
+ 
+-	BUS_IDS[i]=$(lspci -d ${VENDOR_IDS[i]}:${MODEL_IDS[i]} | 
+-		     cut -d' ' -f1 | head -n $((TIMES_USED+1)) | tail -n 1)
++    # 'discover' prints in the reverse order of lspci, I think
++    BUS_IDS=($(lspci | grep VGA | cut -d' ' -f1 | tac))
++
++    for (( i=0; i < ${#BUS_IDS[@]}; i++ )); do
++	PCI_DEVICE=$(lspci -n -s ${BUS_IDS[i]} | cut -d' ' -f3)
++        # We might find multiple drivers. Use the first.
++	DRIVERS[i]=$(grep -i ${PCI_DEVICE/:/} $IDS_BY_DRIVER/* | \
++                     cut -d'/' -f6 | cut -d'.' -f1 | head -n 1)
+     done
+ 
+     for (( i=0 ; i < ${#BUS_IDS[@]}; i++ )) ; do

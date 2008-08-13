@@ -16,7 +16,6 @@ Easy/small tasks:
 - See if our distributions' "gdm.conf" is like the distribution sets it, and
   make patches for gdm.conf if needed.
 - Change Ubuntu's libx11 patch (use fd.o's bug #6820 latest patch)
-- Change Debian-based way to discover drivers (use driver.ids files)
 - Every time we call X, wait for SIGUSR1.
 
 ------------------
