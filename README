@@ -1,82 +1,195 @@
-==========
-INSTALLING
-==========
+======
+README
+======
 
-To install everything you have two options:
- - you can just go to the "compiled" directory and install everything that is
-   already there (the easy way, but not guaranteed to be the most recent
-   version)
- - or you can compile everything again and install them (the other way,
-   recommended)
+The most updated documentation is available at our wiki:
+http://wiki.c3sl.ufpr.br/multiseat
 
+It is also available in other languages there.
 
-= Dependencies =
+This document is just a copy of a 2 pages on the wiki. It follows MediaWiki
+syntax. For the most updated version, see these pages:
 
-To compile the packages, you'll need these packages:
-git-core build-essential pkg-config libcairo2-dev fakeroot
-
-To build the patched libx11-6, you'll need to download its building dependencies
-too.
-
-= THE EASY WAY =
-
-Change to the "compiled" directory.
-Change to your distribution's directory.
-
-Install the packages in the following order:
- - libx11-6
- - mdm
- - any mdm extra mode you might want
-
-For Debian/Ubuntu users, use "dpkg -i" to install a package
-
-Then, add the libx11-6 package to the "hold" state.
-
-For Debian/Ubuntu users:
-echo "libx11-6 hold" | dpkg --set-selections
-
-= THE OTHER WAY =
-
-First, you need to install the "mdm" dependency:
- - libx11-6 with a patch to make Xephyr stop randomly crashing
-
-Go to the "dependencies" directory, then type 
- - cd $(your-distribution-name)
- - sudo make install
-
-This command will download the sources, apply the patches and install the
-packages. It might take a while to do this.
-
-Now, go to the "mdm" directory, and use the same command:
- - sudo make $(your-distribution-name)-install
-
-Finally, if you need any extra modes, go to its directory and use the same
-command again:
- - sudo make $(your-distribution-name)-install
+- http://wiki.c3sl.ufpr.br/multiseat/index.php/Mdm
+- http://wiki.c3sl.ufpr.br/multiseat/index.php/Compiling_mdm
 
 
-=======
-RUNNING
-=======
+========================
+Multisat Display Manager
+========================
 
-First of all, stop gdm, kdm, xdm and your running X sessions.
- - /etc/init.d/gdm stop
 
-Then, edit the /etc/mdm/mdm.conf file to use your preferred mode with your
-custom settings
- - vim /etc/mdm/mdm.conf
+'''mdm''' stands for "multiseat display manager". Despite its name, mdm is actually a wrapper on the real display manager. It is used to configure multiseat environments, allowing users to change a normal machine into a multiseat machine by just installing a package.
 
-Finally, start mdm:
- - /etc/init.d/mdm start
+==The problem==
 
-To stop the service use:
+There are many ways to configure multiseat environments. Some people use nested X servers, while others use multiple instances of the X server or maybe VNC or directfb or anything else. Also, combined with these solutions people might want to use GDM, KDM, XDM, remote X without display managers or many others. The goal of the mdm package is to be generic enough to be able to be used in any solution.
 
-# /etc/init.d/mdm stop
+==The solution==
 
-==========
-DEVELOPING
-==========
+mdm consists of two disctinct parts: the ''core'', simply called mdm, which is the solution-independent code, and the ''multiseat mode'', which is the solution-dependent code. The ''core'' is installed by the mdm package and the other multiseat modes are installed by the other packages (like mdm-xephyr-gdm, which combines Xephyr and GDM). There are also some default modes inside the mdm package, like the xephyr-xdmcp, which just starts X servers connected to remote xdmcp servers. Modes that have extra dependencies are provided by other packages.
 
-For documentation about these scripts, see the "doc" directory.
+===mdm===
 
-For other information about multiseat, visit http://wiki.c3sl.ufpr.br/multiseat
+The ''core'' package is responsible for detecting input devices, video cards, creating xorg.conf, associating seats with devices and then calling the modes
+
+===[[multiseat modes]]===
+
+The modes are actually bash scripts that define some specific functions that are called to start the displays used by the seats. They are usually located in /usr/share/mdm/modes. To change between modes, it is necessary to edit the MULTISEAT_MODE variable inside the [[mdm.conf|mdm configuration file]].
+
+==Using mdm==
+
+There are 3 ways to use mdm. You can:
+* [[Installing mdm|install]] the mdm package from our repositories;
+* [[Compiling mdm|compile]] and install mdm from git
+* or download our [[Live-CD]] and boot it in your machine.
+
+You'll have to install the main mdm package, the package for the multiseat mode you want to use and then edit the [[mdm.conf|mdm configuration file]] to use the right mode and change other preferences.
+
+
+
+=========
+COMPILING
+=========
+
+This page contains instructions on how to compile mdm from git.
+
+==Dependencies==
+
+The first thing you'll need is to download the dependencies. Our dependencies include: [http://git.or.cz/ git], the  essential packages for compiling source code (gcc, make), the cairo library and development files and the fakeroot package
+
+For Debian/Ubuntu users, you can use this command:
+ sudo apt-get install git-core build-essential libcairo2-dev libcairo2 fakeroot
+
+==Downloading the files==
+
+To download the repository, use this command:
+
+ git-clone http://git.c3sl.ufpr.br/pub/scm/multiseat/mdm.git
+
+It will create a directory called ''mdm''. Change to it:
+
+ cd mdm
+
+==Compiling==
+
+Our repository consists of 3 main parts:
+
+* The ''mdm'' directory, which generates the package called mdm
+* The ''extra-modes'' directory, which includes the non-default [[multiseat modes]]
+* The '''dependencies''' directory, which includes a patch for libx11. This patch is needed because without it Xephyr will keep randomly dying. You ''can'' use mdm without it, but as soon as your sessions start dying, you'll want this patch. If you don't use Xephyr, you don't need this patch. The patch fixes [https://bugs.freedesktop.org/show_bug.cgi?id=6820 freedesktop.org's bug #6820]
+
+Also, there are 2 ways of compiling each package. One is for the supported distros and other is for the still unsupported distros. Currently the only supported distros are Debian Lenny and Ubuntu 8.04.
+
+===Supported distros===
+
+Set the DISTRO environment variable according to you distribution's name. Current possible values:
+
+ export DISTRO=debian-lenny
+ export DISTRO=ubuntu-8.04
+
+====Compiling mdm====
+
+Change to the mdm sub-directory
+
+ cd mdm
+
+Generate the package
+
+ make $DISTRO
+
+The package will be installed in the newly-created ''packages'' directory. Use your distribution's command to install it. For Debian/Ubuntu:
+
+ sudo dpkg -i packages/mdm_0.0.2_i386.deb
+
+(package version and architecture might change)
+
+Go back to the main directory
+
+ cd ..
+
+This way, you will be able to use mdm via XDMCP. If you wish to use gdm:
+
+====Compiling the xephyr-gdm mode====
+
+Change to the xephyr-gdm directory:
+
+ cd extra-modes/xephyr-gdm
+
+Generate the package
+
+ make $DISTRO
+
+The package will be installed in the newly-created ''packages'' directory. Use your distribution's command to install it. For Debian/Ubuntu:
+
+ sudo dpkg -i packages/mdm_0.0.2_i386.deb
+
+(package version and architecture might change)
+
+Go back to the main directory
+
+ cd ../..
+
+====Patching libx11-6====
+
+Change to your distribution's dependencies directory
+
+ cd dependencies/$DISTRO
+
+Install the pre-requisites for recompiling libx11
+
+ sudo apt-get build-dep libx11-6
+
+Then, use this command to compile and install the package:
+
+ sudo make install
+
+It will download the sources, apply the patches, and put the libx11-6 package in ''hold'' status.
+
+
+===Still unsupported distros===
+
+====Choose a destination directory====
+
+Instead of inserting the files into the root directory, you'll and to add them somewhere else, like your home directory. Do this:
+
+ export DESTDIR=~/mdm-test
+
+Remember: all the files will be here, so [[mdm.conf]] will be located in $DESTDIR/etc/mdm/mdm.conf, not just /etc/mdm/mdm.conf
+
+====Compile the mdm package====
+
+ cd mdm
+ make DESTDIR=$DESTDIR install
+ cd ..
+
+This way, you will be able to use mdm via XDMCP. If you wish to use gdm:
+
+====Compile xephyr-gdm mode====
+
+ cd extra-modes/xephyr-gdm
+ make DESTDIR=$DESTDIR install
+ cd ../..
+
+====Patching libx11-6====
+
+ cd dependencies/generic
+
+Apply the patch here to your libx11-6 package and install it
+
+ cd ../..
+
+==Configuring the package==
+
+To configure it, edit [[mdm.conf]].
+
+ sudo vim /etc/mdm/mdm.conf
+
+Adjust your monitor mode, frequency, keyboard layout and multiseat mode (use ''xephyr-gdm'' if you want gdm).
+
+==Running==
+
+mdm is configured to automatically start whenever your computer boots. You can either reboot or:
+
+ sudo /etc/init.d/mdm start
+

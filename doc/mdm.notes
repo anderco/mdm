@@ -1,7 +1,9 @@
 ==============================
-MDM: Multiseat Display Manager
+mdm: Multiseat Display Manager
 =============================
 
-TODO
+The mdm documentation is available at our wiki:
+http://wiki.c3sl.ufpr.br/multiseat/
 
-Please read "mdm.pdf".
+For offline information, read the ../README file, which contains information on
+what is mdm and how to compile it.
