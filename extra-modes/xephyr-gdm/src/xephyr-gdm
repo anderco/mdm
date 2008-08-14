@@ -49,6 +49,8 @@ function display_manager_start_monoseat () {
 
     $GDMDYNAMIC -a 0=XHandled
     $GDMDYNAMIC -r 0
+    # XXX: find a better way to wait for X to start
+    sleep 5;
 }
 
 function display_manager_start_underneath_xserver () {
@@ -59,6 +61,8 @@ function display_manager_start_underneath_xserver () {
 
     $GDMDYNAMIC -a 0=XNotHandled
     $GDMDYNAMIC -r 0
+    # XXX: find a better way to wait for X to start
+    sleep 5;
 }
 
 function display_manager_start_seat () {
