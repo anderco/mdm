@@ -18,10 +18,11 @@
  * USA.
  */
 
-# include <stdlib.h>
-# include <stdio.h>
-# include <X11/Xlib.h>
-# include <cairo.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <X11/Xlib.h>
+#include <cairo.h>
+#include <cairo-xlib.h>
 
 int main(int argc, char *argv[])
 {
