@@ -32,15 +32,10 @@ int main(int argc, char *argv[])
     int display_height;
     double y_all_extents = 0.0;
     double x,y;
-    unsigned long valuemask = 0;       
     
     Display *display;
-    Window win;
-    GC gc;
-    
-    XImage *image;
-    XGCValues values;         
-    Visual *visual;
+    Visual  *visual;
+    Window  win;
     
     cairo_text_extents_t extents;
     cairo_surface_t *surface;
@@ -56,16 +51,9 @@ int main(int argc, char *argv[])
     screen_num = DefaultScreen(display);
     
     win = DefaultRootWindow(display);
-    gc = XCreateGC(display, win, valuemask, &values);
     display_width = DisplayWidth(display, screen_num);
     display_height = DisplayHeight(display, screen_num);
     visual = DefaultVisual(display, screen_num);
-
-    image = XCreateImage(display, visual, 1 , XYBitmap, 0, "black",
-                         display_width, display_height, 8, 0);
-    
-    XPutImage(display, win, gc, image, 0, 0, 0, 0, 
-              display_width, display_height);
 
     surface = cairo_xlib_surface_create (display, 
                                          win, 
@@ -74,7 +62,10 @@ int main(int argc, char *argv[])
                                          display_height );	
     
     cr = cairo_create (surface);
-
+    
+    /*Set black backgroud*/
+    cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+    cairo_paint (cr);
     
     cairo_select_font_face (cr, "Arial", 
                             CAIRO_FONT_SLANT_NORMAL, 
