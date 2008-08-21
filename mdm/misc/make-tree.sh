@@ -56,7 +56,7 @@ cp src/mdm-start-seat           $TARGET/$MDM_SCRIPTS/
 cp src/create-xorg-conf         $TARGET/$MDM_SCRIPTS/
 cp src/write-message            $TARGET/$MDM_SCRIPTS/
 cp src/xephyr-wrapper           $TARGET/$MDM_SCRIPTS/
-cp src/xephyr-parent-window     $TARGET/$MDM_SCRIPTS/
+cp src/seat-parent-window       $TARGET/$MDM_SCRIPTS/
 cp src/read-devices             $TARGET/$MDM_SCRIPTS/
 cp src/discover-devices         $TARGET/$MDM_SCRIPTS/
 cp -r modes                     $TARGET/$MDM_SHARE/

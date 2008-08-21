@@ -80,7 +80,7 @@ function display_manager_start_seat () {
     #      seat
 
     echo "Xephyr :${SEAT_NUMBER} -br"
-    echo "       -geometry ${MY_SCREEN_SIZE}+0+0"
+    echo "       -parent $SEAT_WINDOW_ID"
     echo "       -mouse evdev,,device=$MOUSE"
     echo "       -keybd"
     echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
@@ -92,7 +92,7 @@ function display_manager_start_seat () {
     $GDMDYNAMIC "-a ${SEAT_NUMBER}=${XEPHYR_WRAPPER} -br :${SEAT_NUMBER}   \
     	      -display $DISPLAY						   \
 	      -xauthority $XAUTHORITY					   \
-    	      -geometry ${MY_SCREEN_SIZE}+0+0				   \
+    	      -parent $SEAT_WINDOW_ID	   			           \
     	      -mouse evdev,,device=$MOUSE				   \
 	      -keybd							   \
 	evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT"

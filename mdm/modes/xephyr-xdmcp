@@ -80,15 +80,15 @@ function display_manager_start_seat () {
     #      seat
 
     echo "xephyr-wrapper  :${SEAT_NUMBER} -br"
-    echo "       -geometry ${MY_SCREEN_SIZE}+0+0"
+    echo "       -parent $SEAT_WINDOW_ID"
     echo "       -mouse evdev,,device=$MOUSE"
     echo "       -keybd"
     echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
     echo             "xkblayout=$MY_XKB_LAYOUT"
     echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
 
-    $XEPHYR_WRAPPER :${SEAT_NUMBER} -br						     \
-    	    -geometry ${MY_SCREEN_SIZE}+0+0 				     \
+    $XEPHYR_WRAPPER :${SEAT_NUMBER} -br				             \
+    	    -parent ${SEAT_WINDOW_ID} 				             \
     	    -mouse evdev,,device=$MOUSE					     \
 	    -keybd 							     \
      evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT \

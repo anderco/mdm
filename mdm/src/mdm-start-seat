@@ -30,24 +30,38 @@ source $MDM_INCLUDE
 
 READ_DEVICES=${MDM_SCRIPTS}/read-devices
 WRITE_MESSAGE=${MDM_SCRIPTS}/write-message
+SEAT_PARENT_WINDOW=${MDM_SCRIPTS}/seat-parent-window
 
 SEAT_NUMBER=$1
 
 #MY_LOG=$MDM_LOGS/mdm-start-seat.${SEAT_NUMBER}.log
 
+function open_seat_parent_window () {
+        kill `cat ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid 2> /dev/null`
+        rm -f ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid 2> /dev/null
+        
+        $SEAT_PARENT_WINDOW $MY_SCREEN_SIZE+0+0 seat-parent-window$DISPLAY &
+        PID=$!
+        echo $PID > ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid
+
+        SEAT_WINDOW_ID=$(xwininfo -name "seat-parent-window${DISPLAY}" | grep "Window id" | cut -d' ' -f4)
+
+}
+
+
 function display_message () {
     case $1 in
         key_press)
-	    $WRITE_MESSAGE "Press the F$2 key" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press the F$2 key" 1>&2
 	    ;;
 	button_press)
-	    $WRITE_MESSAGE "Press the mouse left button" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press the mouse left button" 1>&2
 	    ;;
 	wait)
-	    $WRITE_MESSAGE "Please wait" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Please wait" 1>&2
 	    ;;
 	reconfigure)
-	    $WRITE_MESSAGE "Press ESC to reconfigure" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press ESC to reconfigure" 1>&2
 	    ;;
     esac
 
@@ -221,6 +235,10 @@ parse_config_file
 
 KEYBOARD=
 MOUSE=
+SEAT_WINDOW_ID=
+
+open_seat_parent_window
+
 while (( 1 )); do
 
     #log --log-file-only "Configuring devices..."

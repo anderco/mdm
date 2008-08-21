@@ -27,14 +27,18 @@
 int main(int argc, char *argv[])
 {
     int i;
-    int screen_num;
-    int display_width;
-    int display_height;
+    int screen;
+    int win_x, win_y;
+    unsigned int width, height;
+    unsigned int depth;
+    unsigned int border_width;
+    unsigned int win_id;
     double y_all_extents = 0.0;
-    double x,y;
+    double x, y;
     
     Display *display;
     Visual  *visual;
+    Window  RootWindow; 
     Window  win;
     
     cairo_text_extents_t extents;
@@ -44,28 +48,27 @@ int main(int argc, char *argv[])
     display = XOpenDisplay(NULL);
     if(display == NULL)
     {
-        fprintf(stderr, "Cannot open diplay.\n");
+        fprintf(stderr, "Cannot open display.\n");
         exit(1);
     }
     
-    screen_num = DefaultScreen(display);
+    screen = DefaultScreen(display);
     
-    win = DefaultRootWindow(display);
-    display_width = DisplayWidth(display, screen_num);
-    display_height = DisplayHeight(display, screen_num);
-    visual = DefaultVisual(display, screen_num);
+    sscanf(argv[1], "%x", &win_id);
+    win = win_id;
+    
+    XGetGeometry(display, win, &RootWindow, &win_x, &win_y,
+                 &width, &height, &border_width, &depth );
+    
+    visual = DefaultVisual(display, screen);
 
     surface = cairo_xlib_surface_create (display, 
                                          win, 
                                          visual, 
-                                         display_width, 
-                                         display_height );	
+                                         width, 
+                                         height );	
     
     cr = cairo_create (surface);
-    
-    /*Set black backgroud*/
-    cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
-    cairo_paint (cr);
     
     cairo_select_font_face (cr, "Arial", 
                             CAIRO_FONT_SLANT_NORMAL, 
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
     cairo_set_font_size (cr, 32.0);
     cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
     
-    for (i = 1; i <= argc; i++)
+    for (i = 2; i < argc ; i++)
     {
         cairo_text_extents(cr, argv[i], &extents);
         y_all_extents += (extents.height/2 + extents.y_bearing*2);
@@ -83,24 +86,26 @@ int main(int argc, char *argv[])
     y_all_extents = y_all_extents/2.0;
     
     cairo_text_extents(cr, argv[1], &extents);
-    x = display_width/2 - (extents.width/2 + extents.x_bearing);
-    y = display_height/2 - (extents.height/2 + extents.y_bearing);
+    x = width/2 - (extents.width/2 + extents.x_bearing);
+    y = height/2 - (extents.height/2 + extents.y_bearing);
     
     y += y_all_extents;
     
     cairo_move_to(cr, x, y );
-                
-    for (i = 1; i < argc; i++)
+    
+    XClearWindow(display, win);
+
+    for (i = 2; i < argc ; i++)
     {
     	cairo_text_extents(cr, argv[i], &extents);
-    	x = display_width/2 - (extents.width/2 + extents.x_bearing);
-    	
-	    cairo_move_to (cr, x, y );
+    	x = width/2 - (extents.width/2 + extents.x_bearing);
+	    
+        cairo_move_to (cr, x, y );
     	cairo_show_text (cr, argv[i]);
-                    
-    	y -= (extents.height/2 + extents.y_bearing*2 );
+    	
+        y -= (extents.height/2 + extents.y_bearing*2 );
     }
-                
+
     XCloseDisplay(display);
 
    return 0; 
