@@ -97,6 +97,12 @@ function display_manager_start_seat () {
 	      -keybd							   \
 	evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT"
     $GDMDYNAMIC -r ${SEAT_NUMBER}
+
+    # XXX: We're letting gdm do everything: it will restart Xephyr whenever it
+    # dies, it will do a lot of stuff. This way, we won't be able to reconfigure
+    # input. We need to find a way to do this, maybe through gdm itself.
+    echo "Exiting (gdm will handle the Xephyrs for us)."
+    exit 1;
 }
 
 function display_manager_stop () {
