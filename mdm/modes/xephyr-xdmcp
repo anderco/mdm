@@ -79,25 +79,26 @@ function display_manager_start_seat () {
     #   - $MY_XKB_LAYOUT and $MY_XKB_MODEL, for the keyboard associated with the
     #      seat
 
-    echo "xephyr-wrapper  :${SEAT_NUMBER} -br"
+    echo "xephyr-wrapper  :$XEPHYR_NUMBER -br"
     echo "       -parent $SEAT_WINDOW_ID"
     echo "       -mouse evdev,,device=$MOUSE"
     echo "       -keybd"
     echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
     echo             "xkblayout=$MY_XKB_LAYOUT"
-    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
+    echo "       -${CONNECTION_TYPE} $CONNECTION_TARGET 2>&1 &"
 
-    $XEPHYR_WRAPPER :${SEAT_NUMBER} -br				             \
-    	    -parent ${SEAT_WINDOW_ID} 				             \
-    	    -mouse evdev,,device=$MOUSE					     \
-	    -keybd 							     \
+    $XEPHYR_WRAPPER :$XEPHYR_NUMBER -br				             \
+	-parent $SEAT_WINDOW_ID  				             \
+	-mouse evdev,,device=$MOUSE					     \
+	-keybd	 							     \
      evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT \
-	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
+       -${CONNECTION_TYPE} $CONNECTION_TARGET 2>&1 &
 
     PID=$!
-    echo $PID > $MDM_PIDS/Xephyr.${SEAT_NUMBER}.pid
+    echo $PID > $MDM_PIDS/Xephyr.${XEPHYR_NUMBER}.pid
     wait $PID
-    rm -f $MDM_PIDS/xephyr-xdmcp-Xephyr.${SEAT_NUMBER}.pid
+    rm -f $MDM_PIDS/xephyr-xdmcp-Xephyr.${XEPHYR_NUMBER}.pid
+    
 }
 
 function display_manager_stop () {
