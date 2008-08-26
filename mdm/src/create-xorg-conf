@@ -26,7 +26,6 @@
 MDM_PREFIX=/
 MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
 MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
-
 source $MDM_INCLUDE
 
 function section_files () {
@@ -123,40 +122,21 @@ function video_sections () {
 # We're inside a loop 
 i=$1
 
-if [ ! -z "${MODE[i]}" ]; then
+if [ ! -z ${MODE[i]} ]; then
     SCREEN_SIZE=${MODE[i]}
 else
     SCREEN_SIZE=$DEFAULT_MODE
 fi
-
-# In case we're using one card with dual output,
-# it is possible to make two heads on it. To do so,
-# it is necessary to open a wider screen (for example,
-# twice wider) to perform this action, we have the
-# WIDTH_MULTIPLIER variable \o/.
-
-if [ -f "$XRANDR_INFO" ]; then
-    WIDTH_MULTIPLIER=`grep -A1 ":0.$((i-1))" $XRANDR_INFO |
-					  tail -1 | cut -d'=' -f2`
-
-    # If $WIDTH_MULTIPLIER=0, set it as 1 
-	#(for configuring at least one screen)
-    WIDTH_MULTIPLIER=${WIDTH_MULTIPLIER/0/1}
-fi
-
-# WIDTH may be still unset, if so, set 1 as default
-WIDTH_MULTIPLIER=${WIDTH_MULTIPLIER:=1}
-
-VIRTUAL_X=$((`echo $SCREEN_SIZE | cut -d'x' -f1` * $WIDTH_MULTIPLIER))
+VIRTUAL_X=$(echo $SCREEN_SIZE | cut -d'x' -f1)
 VIRTUAL_Y=$(echo $SCREEN_SIZE | cut -d'x' -f2)
 
 # HorizSync and VertRefresh: if 'none' specified, don't write in xorg.conf
-if [ ! -z "${HORIZ_SYNC[i]}" ]; then
+if [ ! -z ${HORIZ_SYNC[i]} ]; then
     MONITOR_HORIZ=${HORIZ_SYNC[i]}
 else
     MONITOR_HORIZ=$DEFAULT_HORIZ_SYNC
 fi
-if [ ! -z "${VERT_REFRESH[i]}" ]; then
+if [ ! -z ${VERT_REFRESH[i]} ]; then
     MONITOR_VERT=${VERT_REFRESH[i]}
 else
     MONITOR_VERT=$DEFAULT_VERT_REFRESH
@@ -221,25 +201,6 @@ echo '
 EndSection' >> $MDM_XORG_CONF
 }
 
-function xrandr_renew () {
-	
-	# We need X running to use xrandr, so:
-	X -config $MDM_XORG_CONF -noreset &>/dev/null &
-	local PID=$!
-	sleep 5
-
-	# This will create a file with xrandr useful information
-	for (( i = 0 ; i < $SEATS ; i++)); do
-		export DISPLAY=:0.$i
-		xrandr_create_info_file
-	done
-	
-	# Killing X
-	kill $PID
-	sleep 5
-	exit 0
-}
-
 #####
 
 # They called our script, so they DO want a new xorg.conf
@@ -248,14 +209,6 @@ rm -f $MDM_XORG_CONF
 N_CARDS=$($DISCOVER_DEVICES driver | wc -l)
 DRIVERS=($($DISCOVER_DEVICES driver | cut -f2))
 BUS_IDS=($($DISCOVER_DEVICES bus | cut -f2))
-
-# It seems stupid to do it again, but SEATS is not preserved 
-# from mdm-bin
-if [ "$USE_MONOSEAT" = 'yes' ]; then
-SEATS=1
-else
-SEATS=$N_CARDS
-fi
 
 section_files
 section_module
@@ -266,17 +219,3 @@ for (( c = 1; c <= $N_CARDS; c++)); do
 	video_sections $c
 done
 section_server_layout
-# After xorg.conf.mdm is ready, generate xrandr.info file
-if [ ! -f "$XRANDR_INFO" ]; then
-	xrandr_renew
-	section_files
-	section_module
-	section_server_flags
-	section_dri
-	input_devices_sections
-	for (( c = 1; c <= $N_CARDS; c++)); do
-		video_sections $c
-	done
-	section_server_layout
-fi
-
