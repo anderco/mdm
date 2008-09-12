@@ -23,67 +23,26 @@
 # For input devices, it uses /proc/bus/input/devices
 # For video cardes, it uses the "discover" package.
 
-# TODO: we should stop using /proc and "discover". We should use HAL and X!
+# TODO: find a decent way to do all this.
 
-PROC_DEVICES=/proc/bus/input/devices
 DISCOVER=/sbin/discover
 
 # This function prints the physical addresses of the mice found
 function discover_input () {
 
-    # The elements of the list should contain a whole line of the file, so to
-    # make the attribution work, the line can't contain spaces
-    # Also, there are lines like "^P: $", and if we just grep them and cut -f2,
-    # they will become empty, and will mess with our lists 
+    KEYBOARDS=($(hal-find-by-capability --capability input.keyboard))
+    MICE=($(hal-find-by-capability --capability input.mouse))
 
-    NUMBER_OF_DEVICES=$(grep '^I:' $PROC_DEVICES | wc -l)
-    for(( i = 1; i <= ${NUMBER_OF_DEVICES}; i++ )); do
-	PHYS_ADDRS[i]=$(grep '^P:' $PROC_DEVICES | \
-	                head -n $i | tail -n 1 | cut -d'=' -f2)
-	HANDLERS[i]=$(  grep '^H:' $PROC_DEVICES | \
-	                head -n $i | tail -n 1 | cut -d'=' -f2)
-	NAMES[i]=$(     grep '^N:' $PROC_DEVICES | \
-	                head -n $i | tail -n 1 | cut -d'=' -f2)
+    for i in ${KEYBOARDS[@]}; do
+	EVDEV_NODE=$(hal-device $i | grep linux.device_file | cut -d"'" -f2)
+        echo -e "kbd\t${i}"
+	echo -e "kevdev\t${EVDEV_NODE}"
     done
-
-    for (( i = 1; i <= ${#PHYS_ADDRS[@]}; i++ )); do
-
-	#echo "PHYS_ADDR: ${PHYS_ADDRS[i]}"
-	#echo "HANDLER:   ${HANDLERS[i]}"
-	#echo "NAME:      ${NAMES[i]}"
-	#echo "--"
-
-	EVDEV_NODE="/dev/input/`echo ${HANDLERS[i]}| tr ' ' '\n'| grep "event"`"
-
-	# XXX: "Speaker" should be the "PCSpeaker" device and "Button" should be
-	# all those power buttons and machintosh buttons (not mice!)
-
-	# A mouse has the physical address ending in "0" and its handler
-	# contains "mouse".
-        if echo ${HANDLERS[i]}   | grep -q "mouse"  && \
-	   echo ${PHYS_ADDRS[i]} | grep -q ".*0$"   && \
-	   echo ${NAMES[i]}      | egrep -q -v "(Speaker|Button)"; then
-
-            echo -e "mouse\t${PHYS_ADDRS[i]}"
-	    echo -e "mevdev\t${EVDEV_NODE}"
-        fi
-
-	# A keyboard has a "kbd" handler, its physical address ends in 0 and it
-	# doesn't have the "Speaker" or "Button" words on its name.
-        if echo ${HANDLERS[i]}   | grep -q "kbd"    && \
-           echo ${PHYS_ADDRS[i]} | grep -q ".*0$"   && \
-	   echo ${NAMES[i]}      | egrep -q -v "(Speaker|Button)"; then
-
-	    echo -e "kbd\t${PHYS_ADDRS[i]}"
-	    echo -e "kevdev\t${EVDEV_NODE}"
-  
-        fi
+    for i in ${MICE[@]}; do
+	EVDEV_NODE=$(hal-device $i | grep linux.device_file | cut -d"'" -f2)
+        echo -e "mouse\t${i}"
+	echo -e "mevdev\t${EVDEV_NODE}"
     done
-
-    # if no mouse found, put a serial mouse as default 
-    #if [[ ${#PHYS_ADDRS[@]} == 0 ]]; then
-    #    echo -e "mouse\tserial0"
-    #fi
 }
 
 # Prints bus address and drivers of the video cards.
@@ -178,9 +137,9 @@ case $ARG in
     *)
         echo "$1: unrecognized argument"
 	echo "Valid parameters: "
-	echo "mouse:  prints physical addresses of the mice"
+	echo "mouse:  prints the hal ids of the mice"
 	echo "mevdev: prints the evdev mouse events"
-	echo "kbd:    prints physical addresses of the keyboards"
+	echo "kbd:    prints the hal ids of the keyboards"
 	echo "kevdev: prints the evdev keyboard events"
 	echo "driver: prints the video card drivers"
 	echo "cards:  prints the video card bus IDs"
