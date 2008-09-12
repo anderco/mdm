@@ -59,12 +59,8 @@ function exec_start() {
 	done
     fi
 
-    KEYBOARDS=`$DISCOVER_DEVICES kevdev | wc -l`
-    MICE=`$DISCOVER_DEVICES mevdev | wc -l`
     VIDEO_CARDS=`$DISCOVER_DEVICES driver | wc -l`
 
-    log --log-file-only "$KEYBOARDS keyboards detected"
-    log --log-file-only "$MICE mice detected"
     log --log-file-only "$VIDEO_CARDS video cards detected"
 
     # Other scripts assume we do this:
