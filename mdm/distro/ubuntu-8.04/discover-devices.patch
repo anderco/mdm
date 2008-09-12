@@ -1,20 +1,17 @@
 diff -Nru tree/usr/sbin/discover-devices ubuntu-8.04-tree/usr/sbin/discover-devices
---- tree/usr/sbin/discover-devices	2008-08-13 15:35:08.000000000 -0300
-+++ ubuntu-8.04-tree/usr/sbin/discover-devices	2008-08-13 15:36:10.000000000 -0300
-@@ -26,7 +26,6 @@
- # TODO: we should stop using /proc and "discover". We should use HAL and X!
+--- tree/usr/sbin/discover-devices	2008-09-12 08:48:06.000000000 -0300
++++ ubuntu-8.04-tree/usr/sbin/discover-devices	2008-09-12 08:50:37.000000000 -0300
+@@ -25,8 +25,6 @@
  
- PROC_DEVICES=/proc/bus/input/devices
+ # TODO: find a decent way to do all this.
+ 
 -DISCOVER=/sbin/discover
- 
+-
  # This function prints the physical addresses of the mice found
  function discover_input () {
-@@ -87,31 +86,20 @@
- }
  
+@@ -48,29 +46,16 @@
  # Prints bus address and drivers of the video cards.
-+# This function will work only on system that have the ids files in
-+# /usr/share/xserver-xorg/pci. AFAIK, only Debian and Ubuntu.
  function video_cards () {
  
 -    # calling discover is way toooooo slow!
@@ -38,17 +35,40 @@ diff -Nru tree/usr/sbin/discover-devices ubuntu-8.04-tree/usr/sbin/discover-devi
 -	    fi
 -	done
 +    IDS_BY_DRIVER=/usr/share/xserver-xorg/pci
++
++    # 'discover' prints in the reverse order of lspci, I think
++    BUS_IDS=($(lspci | grep VGA | cut -d' ' -f1 | tac))
  
 -	BUS_IDS[i]=$(lspci -d ${VENDOR_IDS[i]}:${MODEL_IDS[i]} | 
 -		     cut -d' ' -f1 | head -n $((TIMES_USED+1)) | tail -n 1)
-+    # 'discover' prints in the reverse order of lspci, I think
-+    BUS_IDS=($(lspci | grep VGA | cut -d' ' -f1 | tac))
-+
 +    for (( i=0; i < ${#BUS_IDS[@]}; i++ )); do
-+	PCI_DEVICE=$(lspci -n -s ${BUS_IDS[i]} | cut -d' ' -f3)
++        PCI_DEVICE=$(lspci -n -s ${BUS_IDS[i]} | cut -d' ' -f3)
 +        # We might find multiple drivers. Use the first.
-+	DRIVERS[i]=$(grep -i ${PCI_DEVICE/:/} $IDS_BY_DRIVER/* | \
++        DRIVERS[i]=$(grep -i ${PCI_DEVICE/:/} $IDS_BY_DRIVER/* | \
 +                     cut -d'/' -f6 | cut -d'.' -f1 | head -n 1)
      done
  
      for (( i=0 ; i < ${#BUS_IDS[@]}; i++ )) ; do
+@@ -78,17 +63,19 @@
+         # below we split in 00 and 00.00
+         NUMS=(`echo ${BUS_IDS[$i]} |  \
+               awk 'BEGIN {FS=":"}{print toupper($1), toupper($2)}'`)
+-	# now, we split 00.00 in 00 and 00
++        # now, we split 00.00 in 00 and 00
+         SEC_NUMS=(`echo ${NUMS[1]} |  \
+                   awk 'BEGIN {FS="."}{print toupper($1), toupper($2)}'`)
+-	# now, we convert the numbers from hexa to decimal base 
++        # now, we convert the numbers from hexa to decimal base
+         echo -e "bus\t`echo "obase=10;ibase=16;${NUMS[0]};${SEC_NUMS[0]};${SEC_NUMS[1]};" | bc | paste -s -d":"`"
+ 
+     done
+-    
++
+     for i in ${DRIVERS[@]}; do
+         echo -e "driver\t$i"
+     done
++
++
+ } # video_cards
+ 
+ # ******************** MAIN *************************
