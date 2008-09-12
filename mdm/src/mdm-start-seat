@@ -45,8 +45,10 @@ function open_seat_parent_window () {
     # The first parameter given to this function must be [width]*n, where n is
     # a multiplier that gives the coordinates to correctly open
     # seat_parent_window. This number is also used on names of files.
-    kill `cat ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid 2> /dev/null`
-    rm -f ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid 2> /dev/null
+    if [ -f "${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid" ]; then
+        kill `cat ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid` 2> /dev/null
+        rm -f ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid 2> /dev/null
+    fi
 
     $SEAT_PARENT_WINDOW $MY_SCREEN_SIZE+$1+0 seat-parent-window$DISPLAY-$1 &
     PID=$!
