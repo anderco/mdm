@@ -39,6 +39,9 @@ MDM_PIDS=$MDM_RUN/
 
 MDM_XORG_CONF=$MDM_ETC/xorg.conf.mdm
 DISCOVER_DEVICES=$MDM_SCRIPTS/discover-devices
+XRANDR_FUNCTIONS=$MDM_SCRIPTS/xrandr-functions
+
+source $XRANDR_FUNCTIONS
 
 function log() {
     # Whoever calls this must set the $MY_LOG variable!

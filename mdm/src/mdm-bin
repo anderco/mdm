@@ -67,17 +67,21 @@ function exec_start() {
     log --log-file-only "$MICE mice detected"
     log --log-file-only "$VIDEO_CARDS video cards detected"
 
-    if [ "$USE_MONOSEAT" = 'yes' ]; then
-	SEATS=1
-    else
-	SEATS=$VIDEO_CARDS
-    fi
- 
     # Other scripts assume we do this:
     export DISPLAY=:0
 
     # erase links, locks, logs, close stuff, whatever needed
     display_manager_init
+
+    # find out how many seats we actually have
+    OUTPUTS_PER_CARD=$(grep "SCREEN_AMOUNT" $XRANDR_INFO_FILE | cut -d'=' -f2)
+    SEATS=$(echo $OUTPUTS_PER_CARD | sed 's/\s/+/g' | bc)
+
+    log --log-file-only "$SEATS seats detected"
+
+    if [ "$USE_MONOSEAT" = 'yes' ]; then
+	SEATS=1
+    fi
 
     if [ "$SEATS" = "1" ]; then
 	log --log-file-only "Only 1 video card: not using multiseat"
@@ -86,16 +90,32 @@ function exec_start() {
     else
 	display_manager_start_underneath_xserver >> $MY_LOG 2>&1
 
-	for ((i = 0; i < $SEATS; i++)); do
+        for ((i=0; i < $VIDEO_CARDS; i++)); do
+            export DISPLAY=:0.$i
+	    xrandr_configure_layout
+	    xrandr_set_resolutions
+	done
+
+	# Finding how many screens on each card
+	SEATS_ON_CARD=(`grep "SCREEN_AMOUNT" $XRANDR_INFO_FILE | cut -d'=' -f2`)
+
+	SEAT_DISPLAY=1
+	for ((i = 0; i < $VIDEO_CARDS; i++)); do
 	    export DISPLAY=:0.$i
-	    
-	    # display :0.$i must press key $(i+1)
-	    log --log-file-only "Starting seat $((i+1))"
-	    START_SEAT_LOG="${MDM_LOGS}/mdm-start-seat.$((i+1)).log"
-	    rotate_log ${START_SEAT_LOG}
-	    ${START_SEAT} $((i+1)) &> ${START_SEAT_LOG} &
-	    PID=$!
-	    echo $PID > ${MDM_PIDS}/start-seat.$((i+1)).pid
+
+	    # START_SEAT has 2 parameters:
+	    # - the first is the video card number
+	    # - the second is the seat display
+	    for (( seat=0; seat < "${SEATS_ON_CARD[i]}"; seat++ )); do
+		START_SEAT_LOG="${MDM_LOGS}/mdm-start-seat.${SEAT_DISPLAY}.log"
+		rotate_log ${START_SEAT_LOG}
+
+		log --log-file-only "Starting seat $((i+1)) ${SEAT_DISPLAY}"
+		${START_SEAT} $((i+1)) $SEAT_DISPLAY &> $START_SEAT_LOG &
+		PID=$!
+		echo $PID > ${MDM_PIDS}/start-seat.${SEAT_DISPLAY}.pid
+		((SEAT_DISPLAY++))
+	    done
 	done
     fi
 }

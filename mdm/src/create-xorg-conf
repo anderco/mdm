@@ -127,7 +127,22 @@ if [ ! -z ${MODE[i]} ]; then
 else
     SCREEN_SIZE=$DEFAULT_MODE
 fi
-VIRTUAL_X=$(echo $SCREEN_SIZE | cut -d'x' -f1)
+
+# In case we're using one card with dual output, it is possible to make two
+# heads on it. To do so, it is necessary to open a wider screen (for example,
+# twice wider) to perform this action, we have the WIDTH_MULTIPLIER variable.
+
+if [ -f "$XRANDR_INFO_FILE" ]; then
+    WIDTH_MULTIPLIER=`grep -A1 ":0.$((i-1))" $XRANDR_INFO_FILE	|
+                        tail -1 | cut -d'=' -f2`
+    # If $WIDTH_MULTIPLIER=0, set it as 1 (for configuring at least one screen)
+    WIDTH_MULTIPLIER=${WIDTH_MULTIPLIER/0/1}
+fi
+
+# The variable may be still unset, if so, set 1 as default
+WIDTH_MULTIPLIER=${WIDTH_MULTIPLIER:=1}
+
+VIRTUAL_X=$((`echo $SCREEN_SIZE | cut -d'x' -f1` * $WIDTH_MULTIPLIER))
 VIRTUAL_Y=$(echo $SCREEN_SIZE | cut -d'x' -f2)
 
 # HorizSync and VertRefresh: if 'none' specified, don't write in xorg.conf
@@ -201,21 +216,50 @@ echo '
 EndSection' >> $MDM_XORG_CONF
 }
 
-#####
+function generate_xrandr_info_file () {
 
-# They called our script, so they DO want a new xorg.conf
-rm -f $MDM_XORG_CONF
+    # We need X running to use xrandr, so:
+    X -config $MDM_XORG_CONF -noreset &>/dev/null &
+    local PID=$!
+    sleep 5
+
+    # This will create a file with xrandr useful information
+    for (( i=0; i < "$N_CARDS"; i++ )); do
+        export DISPLAY=:0.$i
+        xrandr_append_info_file
+    done
+
+    # Killing X
+    kill $PID
+    sleep 5
+}
+
+function create_xorg_conf_file () {
+    section_files
+    section_module
+    section_server_flags
+    section_dri
+    input_devices_sections
+    for (( c = 1; c <= $N_CARDS; c++)); do
+        video_sections $c
+    done
+    section_server_layout
+}
+#####
 
 N_CARDS=$($DISCOVER_DEVICES driver | wc -l)
 DRIVERS=($($DISCOVER_DEVICES driver | cut -f2))
 BUS_IDS=($($DISCOVER_DEVICES bus | cut -f2))
 
-section_files
-section_module
-section_server_flags
-section_dri
-input_devices_sections
-for (( c = 1; c <= $N_CARDS; c++)); do
-	video_sections $c
-done
-section_server_layout
+# They called our script, so they DO want a new xorg.conf
+rm -f $MDM_XORG_CONF
+rm -f $XRANDR_INFO_FILE
+create_xorg_conf_file
+
+# After xorg.conf.mdm is ready, generate xrandr.info file
+generate_xrandr_info_file
+
+# And recreate xorg.conf, based on information given by xrandr.info file
+rm -f $MDM_XORG_CONF
+create_xorg_conf_file
+

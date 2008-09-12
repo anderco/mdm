@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# Copyright (C) 2004-2007 Centro de Computacao Cientifica e Software Livre
+# Departamento de Informatica - Universidade Federal do Parana - C3SL/UFPR
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+# USA.
+
+# The functions contained on this file are specific for configuring screen
+# resolutions through xrandr. These are necessary for using multihead on
+# cards with more than one output.
+
+# SCREEN_X_ORIGIN sets the original position to open a window (0, 1024 ...)
+SCREEN_X_ORIGIN=
+SCREEN_SIZES=
+SCREEN_AMOUNT=
+OUTPUT_NAMES=
+XRANDR_INFO_FILE=${MDM_ETC}/xrandr.info
+
+# This function configures the screen layout
+function xrandr_configure_layout () {
+    # We do need a value for $SCREEN_SIZES
+    if [ -z "$SCREEN_SIZES" ]; then
+        xrandr_set_screen_amount
+    fi
+
+    # Test if $OUTPUT_NAMES is not null (it happens with older drivers
+    # and/or older versions of xrandr).
+    # In case it is, screen resolution might be already configured
+    OUTPUT_NAMES=(`xrandr|grep "\<connected"|cut -d' ' -f1`)
+    if [ -n "$OUTPUT_NAMES" ]; then
+
+        if [ "${#OUTPUT_NAMES[@]}" == "1" ]; then
+            xrandr --output ${OUTPUT_NAMES[0]} --mode ${SCREEN_SIZES[0]}
+        else
+            # Configuring the first head:
+            xrandr --output ${OUTPUT_NAMES[0]} --mode ${SCREEN_SIZES[0]}
+
+            # To configure the other heads, it is necessary to have the first
+            # head already configured.
+            for (( a = 1; a < ${#OUTPUT_NAMES[@]}; a++ )); do
+                j=$(($a-1))
+                xrandr --output ${OUTPUT_NAMES[$a]} \
+                       --right-of ${OUTPUT_NAMES[$j]}
+            done
+        fi
+    fi
+}
+
+# This function is used to set maximum resolution to screen currently set.
+function xrandr_set_resolutions () {
+
+    if [ -z "$SCREEN_SIZES" ];then
+        xrandr_set_screen_amount
+    fi
+    # We may have none outputs, it happens when there are no monitors
+    # connected to the outputs.
+    # Old drivers give us information even with the monitors shut down
+    if [ ! -z "$OUTPUT_NAMES" ]; then
+        # Trying one head:
+        if [ "${#OUTPUT_NAMES[@]}" = "1" ]; then
+            xrandr --output ${OUTPUT_NAMES[@]} --mode ${SCREEN_SIZES}\
+			2>/dev/null
+        # With more than one head:
+        else
+            # Configuring the first head:
+            xrandr --output ${OUTPUT_NAMES[0]} --mode ${SCREEN_SIZES[0]}
+
+            # To configure the other heads, it is necessary to have the first
+			# head already configured.
+            for (( b=1; b < ${#OUTPUT_NAMES[@]}; b++ )); do
+                xrandr --output ${OUTPUT_NAMES[$b]} \
+                       --mode ${SCREEN_SIZES[$b]} 2>/dev/null
+            done
+        fi
+    fi
+}
+
+# This function is able to detect more than one output (when available).
+function xrandr_set_screen_amount () {
+
+    SCREEN_SIZES=(`xrandr | grep -A1 "\<connected"		|
+					tr -s ' ' | egrep "^ [0-9]*x[0-9]*"	|
+					cut -d' ' -f2`)
+
+    # According to driver in use, different outputs may occur, that is
+    # the reason for us to check if there is a value on $SCREEN_SIZES
+    if [ -z "$SCREEN_SIZES" ]; then
+        SCREEN_SIZES=`xrandr|grep "maximum"       |
+                      awk '{print $(NF-2)"x"$NF}'`
+    fi
+
+    # In case the xrandr version is older than 1.2:
+    if [ -z "$SCREEN_SIZES" ]; then
+        SCREEN_SIZES=`xrandr|egrep -m1 "( |\*)[0-9] "|
+                      awk '{print $2"x"$4}'`
+    fi
+
+    OUTPUT_NAMES=(`xrandr|grep "\<connected"|cut -d' ' -f1`)
+    SCREEN_AMOUNT=${#OUTPUT_NAMES[@]}
+    OUTPUT_NAMES=${OUTPUT_NAMES:=none}
+
+    if (( ${#SCREEN_SIZES[@]} < ${#OUTPUT_NAMES[@]} ));then
+        for (( l = 0 ; l < ${#OUTPUT_NAMES[@]} ; l++ )); do
+            if [ -z "${SREEN_SIZES[l]}" ]; then
+                SCREEN_SIZES[l]=$SCREEN_SIZES
+            fi
+        done
+    fi
+}
+
+# Used to detect x/y coordenates of screens (upper-left corner).
+function xrandr_set_screen_position () {
+
+    xrandr_set_screen_amount
+
+    if (( "$SCREEN_AMOUNT" > 1 )); then
+        SCREEN_X_ORIGIN[0]=0
+        for (( k=0; k<$((SCREEN_AMOUNT-1)); k++)); do
+            SCREEN_X_ORIGIN[((k+1))]=$((`echo ${SCREEN_SIZES[k]}	|
+                                       cut -d'x' -f1`+${SCREEN_X_ORIGIN[k]}))
+        done
+    else
+        SCREEN_X_ORIGIN=0
+    fi
+}
+
+# Append an info file containing xrandr information.
+function xrandr_append_info_file () {
+
+    xrandr_set_screen_position
+
+    # Generating a header
+    if [ ! -f "$XRANDR_INFO_FILE" ]; then
+        echo "Xrandr info file generated on: `date`" >> $XRANDR_INFO_FILE
+    fi
+    echo                                         >> $XRANDR_INFO_FILE
+    echo "DISPLAY=`echo $DISPLAY`"               >> $XRANDR_INFO_FILE
+    echo "SCREEN_AMOUNT=$SCREEN_AMOUNT"          >> $XRANDR_INFO_FILE
+    echo "OUTPUT_NAMES=${OUTPUT_NAMES[@]}"       >> $XRANDR_INFO_FILE
+    echo "SCREEN_SIZES=${SCREEN_SIZES[@]}"       >> $XRANDR_INFO_FILE
+    echo "SCREEN_X_ORIGIN=${SCREEN_X_ORIGIN[@]}" >> $XRANDR_INFO_FILE
+    echo "------------ end ------------"         >> $XRANDR_INFO_FILE
+
+    # Unsetting all vector positions
+    unset SCREEN_X_ORIGIN
+}

@@ -19,9 +19,13 @@
 # USA.
 
 # This script starts a seat.
-# The argument is the number of the seat, starting from zero.
-# We assume $DISPLAY is already set here
+# Its arguments are:
+# - The number of the "video card". Video card N has display 0.((N-1)) on the
+#   underneath xserver.
+# - The number of the display that the seat will have to open. This should be
+#   unique for all seats.
 
+# We assume $DISPLAY is already set here
 
 MDM_PREFIX=/
 MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
@@ -32,20 +36,24 @@ READ_DEVICES=${MDM_SCRIPTS}/read-devices
 WRITE_MESSAGE=${MDM_SCRIPTS}/write-message
 SEAT_PARENT_WINDOW=${MDM_SCRIPTS}/seat-parent-window
 
-SEAT_NUMBER=$1
+VIDEO_CARD_NUMBER=$1
+SEAT_DISPLAY=$2
 
-#MY_LOG=$MDM_LOGS/mdm-start-seat.${SEAT_NUMBER}.log
+#MY_LOG=$MDM_LOGS/mdm-start-seat.${VIDEO_CARD_NUMBER}.log
 
 function open_seat_parent_window () {
-        kill `cat ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid 2> /dev/null`
-        rm -f ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid 2> /dev/null
-        
-        $SEAT_PARENT_WINDOW $MY_SCREEN_SIZE+0+0 seat-parent-window$DISPLAY &
-        PID=$!
-        echo $PID > ${MDM_PIDS}/seat-parent-window${DISPLAY}.pid
+    # The first parameter given to this function must be [width]*n, where n is
+    # a multiplier that gives the coordinates to correctly open
+    # seat_parent_window. This number is also used on names of files.
+    kill `cat ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid 2> /dev/null`
+    rm -f ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid 2> /dev/null
 
-        SEAT_WINDOW_ID=$(xwininfo -name "seat-parent-window${DISPLAY}" | grep "Window id" | cut -d' ' -f4)
+    $SEAT_PARENT_WINDOW $MY_SCREEN_SIZE+$1+0 seat-parent-window$DISPLAY-$1 &
+    PID=$!
+    echo $PID > ${MDM_PIDS}/seat-parent-window${DISPLAY}-$1.pid
 
+    SEAT_WINDOW_ID=$(xwininfo -name "seat-parent-window${DISPLAY}-$1"   |
+                        grep "Window id" | cut -d' ' -f4)
 }
 
 
@@ -69,30 +77,29 @@ function display_message () {
 
 function parse_config_file () {
 
-    if [ ! -z ${XKB_MODEL[SEAT_NUMBER]} ]; then
-        MY_XKB_MODEL=${XKB_MODEL[SEAT_NUMBER]}
+    if [ ! -z ${XKB_MODEL[VIDEO_CARD_NUMBER]} ]; then
+        MY_XKB_MODEL=${XKB_MODEL[VIDEO_CARD_NUMBER]}
     else
         MY_XKB_MODEL=$DEFAULT_XKB_MODEL
     fi
-    if [ ! -z ${XKB_LAYOUT[SEAT_NUMBER]} ]; then
-        MY_XKB_LAYOUT=${XKB_LAYOUT[SEAT_NUMBER]}
+    if [ ! -z ${XKB_LAYOUT[VIDEO_CARD_NUMBER]} ]; then
+        MY_XKB_LAYOUT=${XKB_LAYOUT[VIDEO_CARD_NUMBER]}
     else
         MY_XKB_LAYOUT=$DEFAULT_XKB_LAYOUT
     fi
-    if [ ! -z ${MODE[SEAT_NUBMER]} ]; then
-        MY_SCREEN_SIZE=${MODE[SEAT_NUMBER]}
+    if [ ! -z ${MODE[SEAT_NUMBER]} ]; then
+        MY_SCREEN_SIZE=${MODE[VIDEO_CARD_NUMBER]}
     else
         MY_SCREEN_SIZE=$DEFAULT_MODE
     fi
-
 }
 
 function select_keyboard () {
-    if [ -e "${MDM_DEVICES}/keyboard${SEAT_NUMBER}" ]; then
+    if [ -e "${MDM_DEVICES}/keyboard${SEAT_DISPLAY}" ]; then
 	return
     fi
 
-    display_message key_press $SEAT_NUMBER
+    display_message key_press $SEAT_DISPLAY
 
     CREATED=0
     while (( ! CREATED )); do
@@ -115,7 +122,8 @@ function select_keyboard () {
 	fi
 
 	# See if someone presses the key:
-	PRESSED=$($READ_DEVICES $SEAT_NUMBER $KEYBOARDS | grep '^detect' | cut -d'|' -f2)
+	PRESSED=$($READ_DEVICES $SEAT_DISPLAY $KEYBOARDS | grep '^detect' |
+	            cut -d'|' -f2)
 
 	if [ -z "$PRESSED" ]; then
 	    # if $READ_DEVICES gets killed the script won't do bad stuff
@@ -126,30 +134,30 @@ function select_keyboard () {
 	fi
 
 	# Ok, someone pressed the key
-	ln -sf $PRESSED $MDM_DEVICES/keyboard${SEAT_NUMBER}
+	ln -sf $PRESSED $MDM_DEVICES/keyboard${SEAT_DISPLAY}
 	CREATED=1
 
 	# Verify is there is already another link in $MDM_DEVICES/keyboard* that
 	# points to the device. If there is, erase the one I created and
 	# continue looping
 	for i in `ls $MDM_DEVICES | grep "\<keyboard"`; do
-	    if [ "$i" != "keyboard${SEAT_NUMBER}" ]; then
+	    if [ "$i" != "keyboard${SEAT_DISPLAY}" ]; then
 		AUX=$(stat -c %N $MDM_DEVICES/$i| cut -d'`' -f3| cut -d"'" -f1)
 		if [ "$AUX" = "$PRESSED" ]; then
 		    # Keyboard link already exists...
-		    rm -f $MDM_DEVICES/keyboard${SEAT_NUMBER}
+		    rm -f $MDM_DEVICES/keyboard${SEAT_DISPLAY}
 		    CREATED=0
 		fi
 	    fi
 	done
     done
 
-    KEYBOARD="$MDM_DEVICES/keyboard${SEAT_NUMBER}"
+    KEYBOARD="$MDM_DEVICES/keyboard${SEAT_DISPLAY}"
 
 }
 
 function select_mouse () {
-    if [ -e "${MDM_DEVICES}/mouse${SEAT_NUMBER}" ]; then
+    if [ -e "${MDM_DEVICES}/mouse${SEAT_DISPLAY}" ]; then
 	return
     fi
 
@@ -173,17 +181,17 @@ function select_mouse () {
 	# Create the lock
 	LOCK_EXISTS=1
 	while (( LOCK_EXISTS )); do
-	    touch ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    touch ${MDM_DEVICES}/lock${SEAT_DISPLAY}
 	    LOCK_EXISTS=0
 	    for i in `ls $MDM_DEVICES | grep "\<lock"`; do
-		if [ "$i" != "lock${SEAT_NUMBER}" ]; then
+		if [ "$i" != "lock${SEAT_DISPLAY}" ]; then
 		    LOCK_EXISTS=1
 		fi
 	    done
 	    if (( LOCK_EXISTS )); then
 		# Yes, we'll call this lots of times...
-		display_message wait 
-		rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+		display_message wait
+		rm -f ${MDM_DEVICES}/lock${SEAT_DISPLAY}
 		sleep 1;
 	    fi
 	done
@@ -196,39 +204,39 @@ function select_mouse () {
 
 	if [ -z "$PRESSED" ]; then
 	    # If $READ_DEVICES gets killed, don't do unwanted stuff
-	    rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    rm -f ${MDM_DEVICES}/lock${SEAT_DISPLAY}
 	    continue
 	fi
 	if [ "$PRESSED" = 'timeout' ]; then
 	    # Wait 5 seconds to give other machines the opportunity to enter the
 	    # lock
 	    display_message wait
-	    rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	    rm -f ${MDM_DEVICES}/lock${SEAT_DISPLAY}
 	    sleep 5
 	    continue
 	fi
 
 	# Ok, someone pressed the key
-	ln -sf $PRESSED ${MDM_DEVICES}/mouse${SEAT_NUMBER}
+	ln -sf $PRESSED ${MDM_DEVICES}/mouse${SEAT_DISPLAY}
 	CREATED=1
 
 	# Verify is there is already another link in $MDM_DEVICES/mouse* that
 	# points to the device. If there is, erase the one I created and
 	# continue looping
 	for i in `ls $MDM_DEVICES | grep "\<mouse"`; do
-	    if [ "$i" != "mouse${SEAT_NUMBER}" ]; then
+	    if [ "$i" != "mouse${SEAT_DISPLAY}" ]; then
 		AUX=$(stat -c %N ${MDM_DEVICES}/$i| cut -d'`' -f3|cut -d"'" -f1)
 		if [ "$AUX" = "$PRESSED" ]; then
 		    # Mouse link already exists...
-		    rm -f ${MDM_DEVICES}/mouse${SEAT_NUMBER}
+		    rm -f ${MDM_DEVICES}/mouse${SEAT_DISPLAY}
 		    CREATED=0
 		fi
 	    fi
 	done
-	rm -f ${MDM_DEVICES}/lock${SEAT_NUMBER}
+	rm -f ${MDM_DEVICES}/lock${SEAT_DISPLAY}
     done
 
-    MOUSE="${MDM_DEVICES}/mouse${SEAT_NUMBER}"
+    MOUSE="${MDM_DEVICES}/mouse${SEAT_DISPLAY}"
 }
 
 parse_config_file
@@ -236,8 +244,14 @@ parse_config_file
 KEYBOARD=
 MOUSE=
 SEAT_WINDOW_ID=
+SCREEN_X_ORIGIN=($(grep -A4 $DISPLAY $XRANDR_INFO_FILE |
+					tail -1 | cut -d'=' -f2))
 
-open_seat_parent_window
+# XXX: In case $SCREEN_X_ORIGIN has only one value, and SEAT_DISPLAY is odd,
+# the open_seat_parent_window given parameter would be empty
+# ($SCREEN_X_ORIGIN[1] for example).
+
+open_seat_parent_window ${SCREEN_X_ORIGIN[$((SEAT_DISPLAY % 2))]:=0}
 
 while (( 1 )); do
 

@@ -54,6 +54,7 @@ cp src/mdm-bin                  $TARGET/$MDM_SCRIPTS/
 cp src/mdm-common               $TARGET/$MDM_SCRIPTS/
 cp src/mdm-start-seat           $TARGET/$MDM_SCRIPTS/
 cp src/create-xorg-conf         $TARGET/$MDM_SCRIPTS/
+cp src/xrandr-functions         $TARGET/$MDM_SCRIPTS/
 cp src/write-message            $TARGET/$MDM_SCRIPTS/
 cp src/xephyr-wrapper           $TARGET/$MDM_SCRIPTS/
 cp src/seat-parent-window       $TARGET/$MDM_SCRIPTS/
