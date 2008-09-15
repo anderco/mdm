@@ -113,7 +113,7 @@ function select_keyboard () {
 	REMOVE=$(stat -c %N $MDM_DEVICES/keyboard* 2> /dev/null|
 	         cut -d'`' -f3 | cut -d"'" -f1)
 	for i in ${REMOVE}; do
-	    KEYBOARDS=`sed "s#$i# #g" <<< $KEYBOARDS`
+	    KEYBOARDS=$(sed "s#$i##g" <<< $KEYBOARDS)
 	done
 	#echo "    ... after removing: Keyboards = $KEYBOARDS" 1>&2
 	
@@ -171,7 +171,7 @@ function select_mouse () {
 	REMOVE=$(stat -c %N ${MDM_DEVICES}/mouse* 2> /dev/null|
 	         cut -d'`' -f3 | cut -d"'" -f1)
 	for i in ${REMOVE}; do
-	    MICE=`sed "s#$i# #g" <<< $MICE`
+	    MICE=$(sed "s#$i##g" <<< $MICE)
 	done
 	
 	if [ -z "$MICE" ]; then
