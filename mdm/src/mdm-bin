@@ -89,7 +89,6 @@ function exec_start() {
         for ((i=0; i < $VIDEO_CARDS; i++)); do
             export DISPLAY=:0.$i
 	    xrandr_configure_layout
-	    xrandr_set_resolutions
 	done
 
 	# Finding how many screens on each card
