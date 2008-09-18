@@ -1,9 +1,9 @@
 ---------------
 On-going tasks:
 
-Aramis: adding support for cards with multiple outputs
-Lucas: creating new Live-CD
-Paulo: documenting, TODO editing, small fixes
+Aramis: testing and fixing possible bugs
+Lucas: creating new Live-CD, working with internationalization
+Paulo: documenting, TODO editing, bug fixing.
 
 -----------------
 Easy/small tasks:
@@ -21,17 +21,23 @@ Easy/small tasks:
   Do this in a separate commit.
 - Should we stop printing useless parts of xorg.conf since everyone has a xorg
   server > 1.4 ?
-- read-devices.c: if it accepts nothing as an argument, there is no problem
-  (we're just waiting for someone to plug a device). To fix this, we have two
-  ways: we can fix read-devices.c OR fix mdm-start-seat (to not call
-  read-devices.c).
+- The xrandr_funtions stuff should be moved to inside the modes. Not every mode
+  will want this.
+- Now that xrandr_functions were added, the scripts are not respecting the
+  screen resolution (mode). Fix this.
+- When you start mdm with monoseat, the mdm-bin process never ends. This breaks
+  the init.d file, which runs mdm-bin in "foreground". Maybe the ideal fix would
+  not be to start mdm-bin in background, but do something else.
+- Don't make xephyr-gdm mode open gdm. In Debian, doing this will print some
+  error messages. Make it detect if gdm is open first.
 
 ------------------
 Medium/hard tasks:
 
-- Change discover_devices:
-	- find a better way to detect input devices (HAL?)
-	- find a better way to detect video cards (Xorg?)
+- Create a mode to use multiple X servers. To do this we'll need big changes,
+  specially in the configuration process. mdm will have to get a lot more
+  "generic" to do this.
+- Change discover_devices find a better way to detect input devices
 - Fix the problem with "mdm stop" (talk to Paulo for more info about this)
 - Create a mode that uses VNC!
 - Create other useful modes for UFPR informatics department (sibi, provas, boca,
@@ -46,7 +52,6 @@ Medium/hard tasks:
   be some sort of timeout we need to disable
 - In mode xephyr-gdm, find a way to allow reconfiguring input when Xephyr dies.
 - Release 1.0.0 when everything else is done.
-
 
 ---------------------------------------------------------------------
 Things you'll need to commit outside your repository (mainly X work):
