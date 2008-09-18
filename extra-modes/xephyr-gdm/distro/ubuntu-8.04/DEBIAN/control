@@ -1,5 +1,5 @@
 Package: mdm-xephyr-gdm
-Version: 0.0.2
+Version: 0.0.3
 Section: universe/x11 
 Architecture: i386
 Priority: optional

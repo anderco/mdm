@@ -21,7 +21,7 @@
 # This is the file that is included by everyone. It should cointain all the
 # variables that are common to every function.
 
-MDM_VERSION='0.0.2'
+MDM_VERSION='0.0.3'
 
 MDM_PREFIX=/
 
