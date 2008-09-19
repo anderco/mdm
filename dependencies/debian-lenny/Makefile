@@ -5,6 +5,9 @@ LIBX11_SOURCE_DIR   = libx11-1.1.4
 LIBX11_PATCH_FILE   = libx11-eagain.patch
 LIBX11_DEB_PKG      = libx11-6_1.1.4-2_i386.deb
 
+abnt2:
+	patch -p1 -d /usr/share/X11 < fix-abnt2-kbd.patch
+
 install: libx11
 	dpkg -i $(LIBX11_DEB_PKG)
 	echo "$(LIBX11_PACKAGE_NAME) hold" | dpkg --set-selections
