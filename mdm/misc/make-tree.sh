@@ -29,6 +29,7 @@ MDM_LOGS=$BASE_DIR/var/log/mdm/
 MDM_ETC=$BASE_DIR/etc/mdm/
 MDM_SHARE=$BASE_DIR/usr/share/mdm/
 MDM_SCRIPTS=$BASE_DIR/usr/sbin/
+MDM_LOCALE=$BASE_DIR/usr/share/locale/
 
 CONFIG_FILE=$MDM_ETC/mdm.conf
 
@@ -63,3 +64,10 @@ cp src/discover-devices         $TARGET/$MDM_SCRIPTS/
 cp -r modes                     $TARGET/$MDM_SHARE/
 cp config/mdm.conf              $TARGET/$MDM_ETC/
 
+#Creating and moving .mo files to their directory.
+
+for LANGUAGE in $(ls po/*.po | cut -d'/' -f2 | cut -d'.' -f1); do
+
+        mkdir -p $TARGET/$MDM_LOCALE/$LANGUAGE/LC_MESSAGES/
+        cp po/$LANGUAGE.mo $TARGET/$MDM_LOCALE/$LANGUAGE/LC_MESSAGES/mdm.mo
+done

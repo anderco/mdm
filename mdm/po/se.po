@@ -1,0 +1,12 @@
+#: ../src/mdm-start-seat:68
+msgid "Press the F$2 key"
+msgstr "Tryck tangenten F$2"
+#: ../src/mdm-start-seat:71
+msgid "Press the mouse left button"
+msgstr "Tryck vänster knapp på mus"
+#: ../src/mdm-start-seat:74
+msgid "Please wait"
+msgstr "Vänta"
+#: ../src/mdm-start-seat:77
+msgid "Press ESC to reconfigure"
+msgstr "Tryck ESC för att omkonfigurera"

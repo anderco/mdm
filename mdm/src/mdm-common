@@ -30,6 +30,7 @@ MDM_RUN=$MDM_PREFIX/var/run/mdm/
 MDM_ETC=$MDM_PREFIX/etc/mdm/
 MDM_SHARE=$MDM_PREFIX/usr/share/mdm/
 MDM_SCRIPTS=$MDM_PREFIX/usr/sbin/
+MDM_LOCALE=$MDM_PREFIX/usr/share/locale/
 
 CONFIG_FILE=$MDM_ETC/mdm.conf
 

@@ -39,6 +39,9 @@ SEAT_PARENT_WINDOW=${MDM_SCRIPTS}/seat-parent-window
 VIDEO_CARD_NUMBER=$1
 SEAT_DISPLAY=$2
 
+TEXTDOMAINDIR=${MDM_LOCALE}
+TEXTDOMAIN=mdm
+
 #MY_LOG=$MDM_LOGS/mdm-start-seat.${VIDEO_CARD_NUMBER}.log
 
 function open_seat_parent_window () {
@@ -62,16 +65,16 @@ function open_seat_parent_window () {
 function display_message () {
     case $1 in
         key_press)
-	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press the F$2 key" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID $"Press the F$2 key" 1>&2
 	    ;;
 	button_press)
-	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press the mouse left button" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID $"Press the mouse left button" 1>&2
 	    ;;
 	wait)
-	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Please wait" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID $"Please wait" 1>&2
 	    ;;
 	reconfigure)
-	    $WRITE_MESSAGE $SEAT_WINDOW_ID "Press ESC to reconfigure" 1>&2
+	    $WRITE_MESSAGE $SEAT_WINDOW_ID $"Press ESC to reconfigure" 1>&2
 	    ;;
     esac
 

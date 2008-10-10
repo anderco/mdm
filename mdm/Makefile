@@ -42,6 +42,8 @@ ubuntu-8.04: tree
 	@fakeroot dpkg -b ubuntu-8.04-tree packages
 
 tree: binaries prefix
+	@echo "Translating package"
+	@misc/translate.sh
 	@echo "Creating file tree in temporary folder tree/"
 	@misc/make-tree.sh
 
@@ -60,5 +62,6 @@ clean:
 	rm -f src/read-devices
 	rm -f src/write-message
 	rm -f src/seat-parent-window
+	rm -f po/*.mo
 	rm -rf *tree
 	rm -rf packages
