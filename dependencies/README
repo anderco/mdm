@@ -1,0 +1,4 @@
+These pathes fix common problems in some distros.
+
+Some of these patches may already in in the "upstream", but for some distros
+with older versions of X they might still be needed.

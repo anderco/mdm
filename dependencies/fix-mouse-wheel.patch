@@ -1,0 +1,11 @@
+--- kinput.c    2008-10-14 11:36:39.000000000 -0200
++++ kinput.c.new        2008-10-14 11:36:08.000000000 -0200
+ -1283,7 +1283,7 @@
+         return NULL;
+     pi->emulateMiddleButton = kdEmulateMiddleButton;
+     pi->transformCoordinates = !kdRawPointerCoordinates;
+-    pi->nButtons = 3;
++    pi->nButtons = 5;
+     pi->inputClass = KD_MOUSE;
+
+     if (!arg)

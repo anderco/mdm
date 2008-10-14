@@ -11,36 +11,6 @@ install: tree
 	@echo "Installing..."
 	@misc/install.sh
 
-debian-lenny-install: debian-lenny
-	@echo "Installing the mdm package"
-	@dpkg -i packages/mdm_$(VERSION)_i386.deb
-
-debian-lenny: tree
-	@echo "Creating debian-lenny-tree"
-	@cp -r tree debian-lenny-tree
-	@cp -r distro/debian-lenny/DEBIAN debian-lenny-tree
-	@echo "Applying patches"
-	@cd debian-lenny-tree && \
-		patch -p1 < ../distro/debian-lenny/discover-devices.patch
-	@mkdir -p packages
-	@echo "Creating .deb in packages/"
-	@fakeroot dpkg -b debian-lenny-tree packages
-
-ubuntu-8.04-install: ubuntu-8.04
-	@echo "Installing the mdm package"
-	@dpkg -i packages/mdm_$(VERSION)_i386.deb
-
-ubuntu-8.04: tree
-	@echo "Creating ubuntu-8.04-tree"
-	@cp -r tree ubuntu-8.04-tree
-	@cp -r distro/ubuntu-8.04/DEBIAN ubuntu-8.04-tree
-	@echo "Applying patches"
-	@cd ubuntu-8.04-tree && \
-		patch -p1 < ../distro/ubuntu-8.04/discover-devices.patch
-	@mkdir -p packages
-	@echo "Creating .deb in packages/"
-	@fakeroot dpkg -b ubuntu-8.04-tree packages
-
 tree: binaries prefix
 	@echo "Translating package"
 	@misc/translate.sh
