@@ -1,0 +1,12 @@
+#: ../src/mdm-start-seat:68
+msgid "Press the F$2 key"
+msgstr "Premere il tasto F$2"
+#: ../src/mdm-start-seat:71
+msgid "Press the mouse left button"
+msgstr "Premere il bottone sinistro del mouse"
+#: ../src/mdm-start-seat:74
+msgid "Please wait"
+msgstr "Aspettare"
+#: ../src/mdm-start-seat:77
+msgid "Press ESC to reconfigure"
+msgstr "Premere ESC per riconfigurare"
