@@ -32,6 +32,7 @@ MDM_LOCK_FILE=/var/lock/mdm.lock
 
 CREATE_XORG_CONF=${MDM_SCRIPTS}/create-xorg-conf
 START_SEAT=${MDM_SCRIPTS}/mdm-start-seat
+START_MONOSEAT=${MDM_SCRIPTS}/mdm-start-monoseat
 
 function exec_start() {
 	
@@ -81,8 +82,10 @@ function exec_start() {
 
     if [ "$SEATS" = "1" ]; then
 	log --log-file-only "Only 1 video card: not using multiseat"
-	display_manager_start_monoseat >> $MY_LOG 2>&1
-
+        rotate_log ${MDM_LOGS}/mdm-monoseat.log
+        $START_MONOSEAT &> ${MDM_LOGS}/mdm-monoseat.log &
+        PID=$!
+        echo $PID > $MDM_PIDS/mdm-start-monoseat.pid
     else
 	display_manager_start_underneath_xserver >> $MY_LOG 2>&1
 

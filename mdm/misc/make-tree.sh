@@ -61,6 +61,7 @@ cp src/xephyr-wrapper           $TARGET/$MDM_SCRIPTS/
 cp src/seat-parent-window       $TARGET/$MDM_SCRIPTS/
 cp src/read-devices             $TARGET/$MDM_SCRIPTS/
 cp src/discover-devices         $TARGET/$MDM_SCRIPTS/
+cp src/mdm-start-monoseat       $TARGET/$MDM_SCRIPTS/
 cp -r modes                     $TARGET/$MDM_SHARE/
 cp config/mdm.conf              $TARGET/$MDM_ETC/
 
