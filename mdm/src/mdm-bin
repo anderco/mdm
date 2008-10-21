@@ -76,16 +76,13 @@ function exec_start() {
 
     log --log-file-only "$SEATS seats detected"
 
-    if [ "$USE_MONOSEAT" = 'yes' ]; then
-	SEATS=1
-    fi
-
-    if [ "$SEATS" = "1" ]; then
-	log --log-file-only "Only 1 video card: not using multiseat"
+    if [ "$SEATS" = "1" ] || [ "$USE_MONOSEAT" = 'yes' ] ; then
+        log --log-file-only "Not using multiseat"
         rotate_log ${MDM_LOGS}/mdm-monoseat.log
         $START_MONOSEAT &> ${MDM_LOGS}/mdm-monoseat.log &
         PID=$!
         echo $PID > $MDM_PIDS/mdm-start-monoseat.pid
+
     else
 	display_manager_start_underneath_xserver >> $MY_LOG 2>&1
 
