@@ -38,14 +38,15 @@ function display_manager_start_monoseat () {
     # You should open only 1 xserver and that's it: normal usage, not multiseat
     # Do NOT configure devices or stuff like that
     # We assume $DISPLAY is already set here.
+    while true; do    
+        X -config $MDM_XORG_CONF			\
+          -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
 
-    X -config $MDM_XORG_CONF			\
-       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
-
-    PID=$!
-    echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
-    wait $PID
-    rm -f $MDM_PIDS/xephyr-xdmcp-X.pid
+        PID=$!
+        echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
+        wait $PID
+        rm -f $MDM_PIDS/xephyr-xdmcp-X.pid
+    done    
 }
 
 function display_manager_start_underneath_xserver () {
