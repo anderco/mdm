@@ -85,7 +85,8 @@ function display_manager_start_seat () {
     echo "       -keybd"
     echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
     echo             "xkblayout=$MY_XKB_LAYOUT"
-    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
+    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET}"
+    echo "       -dpi $DPI_VALUE  2>&1 &"
 
     $GDMDYNAMIC "-a ${SEAT_DISPLAY}=${XEPHYR_WRAPPER} -br :${SEAT_DISPLAY}   \
     	      -display $DISPLAY						   \
@@ -93,7 +94,8 @@ function display_manager_start_seat () {
     	      -parent $SEAT_WINDOW_ID	   			           \
     	      -mouse evdev,,device=$MOUSE				   \
 	      -keybd							   \
-	evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT"
+	evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT \
+              -dpi $DPI_VALUE"
     $GDMDYNAMIC -r ${SEAT_DISPLAY}
 
     # XXX: We're letting gdm do everything: it will restart Xephyr whenever it

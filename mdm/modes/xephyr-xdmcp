@@ -86,14 +86,16 @@ function display_manager_start_seat () {
     echo "       -keybd"
     echo -n "        evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,"
     echo             "xkblayout=$MY_XKB_LAYOUT"
-    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &"
+    echo "       -${CONNECTION_TYPE} ${CONNECTION_TARGET}"
+    echo "       -dpi $DPI_VALUE  2>&1 &"
 
     $XEPHYR_WRAPPER :${SEAT_DISPLAY} -br				             \
     	    -parent ${SEAT_WINDOW_ID} 				             \
     	    -mouse evdev,,device=$MOUSE					     \
 	    -keybd 							     \
      evdev,,device=$KEYBOARD,xkbmodel=$MY_XKB_MODEL,xkblayout=$MY_XKB_LAYOUT \
-	    -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
+	    -${CONNECTION_TYPE} ${CONNECTION_TARGET}                         \
+            -dpi $DPI_VALUE 2>&1 &
 
     PID=$!
     echo $PID > $MDM_PIDS/Xephyr.${SEAT_DISPLAY}.pid
