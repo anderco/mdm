@@ -79,6 +79,18 @@ function select_display_manager () {
     source $MDM_MODES/$MULTISEAT_MODE
 }
 
+function rkill()
+{
+   PID=$1
+   CHILDREN=$(ps --ppid $PID |awk 'NR>1{print $1}')
+
+   kill $PID
+
+   for CHILD in $CHILDREN; do
+       rkill $CHILD
+   done
+}
+
 #####
 
 load_config

@@ -120,7 +120,7 @@ function exec_stop() {
     display_manager_stop
 
     for i in `ls $MDM_PIDS/*.pid 2> /dev/null`; do
-	kill `cat $i` 2> /dev/null
+	rkill `cat $i` 2> /dev/null
 	rm -f $i
     done
 
