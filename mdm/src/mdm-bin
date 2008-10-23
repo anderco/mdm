@@ -72,7 +72,10 @@ function exec_start() {
 
     # find out how many seats we actually have
     OUTPUTS_PER_CARD=$(grep "SCREEN_AMOUNT" $XRANDR_INFO_FILE | cut -d'=' -f2)
-    SEATS=$(echo $OUTPUTS_PER_CARD | sed 's/\s/+/g' | bc)
+    SEATS=0
+    for i in $OUTPUTS_PER_CARD; do
+	SEATS=$(($SEATS+$i))
+    done
 
     log --log-file-only "$SEATS seats detected"
 

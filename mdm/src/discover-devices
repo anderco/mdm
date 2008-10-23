@@ -75,14 +75,16 @@ function video_cards () {
 
     for (( i=0 ; i < ${#BUS_IDS[@]}; i++ )) ; do
         # busid from lspci is in format 00:00.00
-        # below we split in 00 and 00.00
-        NUMS=(`echo ${BUS_IDS[$i]} |  \
-              awk 'BEGIN {FS=":"}{print toupper($1), toupper($2)}'`)
-	# now, we split 00.00 in 00 and 00
-        SEC_NUMS=(`echo ${NUMS[1]} |  \
-                  awk 'BEGIN {FS="."}{print toupper($1), toupper($2)}'`)
-	# now, we convert the numbers from hexa to decimal base 
-        echo -e "bus\t`echo "obase=10;ibase=16;${NUMS[0]};${SEC_NUMS[0]};${SEC_NUMS[1]};" | bc | paste -s -d":"`"
+        # below we convert 0:00.00 in 00:00:00 and then split in 00, 00 and 00
+	NUMS=(`echo ${BUS_IDS[$i]} | sed -e "s/\./\:/g" | \
+		awk 'BEGIN {FS=":"}{print toupper($1), toupper($2), toupper($3)}'`)
+	# now, we convert the numbers from hexa to decimal base
+	for (( j=0; j<${#NUMS[@]}; j++ ));  do
+		NUMS[$j]=$(printf "%d" 0x${NUMS[$j]})
+	done
+	# putting it all back together
+	BUS_ID="${NUMS[0]}:${NUMS[1]}:${NUMS[2]}"
+        echo -e "bus\t${BUS_ID}"
 
     done
     
