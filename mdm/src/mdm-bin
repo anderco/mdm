@@ -69,6 +69,12 @@ function exec_start() {
 
     # erase links, locks, logs, close stuff, whatever needed
     display_manager_init
+    # check result
+    if [ "$?" != "0" ]; then
+       log --log-file-only "Error: failed to initialize `$MULTISEAT_MODE`"
+        rm -f $MDM_LOCK_FILE
+        exit 1
+    fi
 
     # find out how many seats we actually have
     OUTPUTS_PER_CARD=$(grep "SCREEN_AMOUNT" $XRANDR_INFO_FILE | cut -d'=' -f2)

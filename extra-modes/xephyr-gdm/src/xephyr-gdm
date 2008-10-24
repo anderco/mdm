@@ -38,7 +38,10 @@ function display_manager_init () {
     # No problem if it's already running...
     display_manager_stop
 
-    /etc/init.d/gdm start
+    if [ ! -e $GDM_SOCKET ]; then
+       log --log-file-only "Error: gdm is not running"
+       return 1
+    fi
 }
 
 function display_manager_start_monoseat () {
