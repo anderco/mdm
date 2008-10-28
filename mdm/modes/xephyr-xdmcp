@@ -31,6 +31,8 @@ function display_manager_init () {
     # Consider calling display_manager_stop here if you don't need anything
     # else.
     display_manager_stop
+
+    return 0
 }
 
 function display_manager_start_monoseat () {
@@ -38,7 +40,7 @@ function display_manager_start_monoseat () {
     # You should open only 1 xserver and that's it: normal usage, not multiseat
     # Do NOT configure devices or stuff like that
     # We assume $DISPLAY is already set here.
-    while true; do    
+    while true; do
         X -config $MDM_XORG_CONF			\
           -${CONNECTION_TYPE} ${CONNECTION_TARGET} 2>&1 &
 
@@ -46,7 +48,9 @@ function display_manager_start_monoseat () {
         echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
         wait $PID
         rm -f $MDM_PIDS/xephyr-xdmcp-X.pid
-    done    
+    done
+
+    return 0
 }
 
 function display_manager_start_underneath_xserver () {
@@ -59,11 +63,13 @@ function display_manager_start_underneath_xserver () {
     X -noreset -config $MDM_XORG_CONF 2>&1 &
     PID=$!
     echo $PID > $MDM_PIDS/xephyr-xdmcp-X.pid
-    
-    # XXX Wait for sigusr1, that X will send when it gets ready 
+
+    # XXX Wait for sigusr1, that X will send when it gets ready
     sleep 5
 
     xauth -f ${XAUTH_FILE} generate :0
+
+    return 0
 }
 
 function display_manager_start_seat () {

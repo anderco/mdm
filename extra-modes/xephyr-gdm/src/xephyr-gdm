@@ -42,6 +42,8 @@ function display_manager_init () {
        log --log-file-only "Error: gdm is not running"
        return 1
     fi
+
+    return 0
 }
 
 function display_manager_start_monoseat () {
@@ -52,8 +54,9 @@ function display_manager_start_monoseat () {
 
     $GDMDYNAMIC -a 0=XHandled
     $GDMDYNAMIC -r 0
-    # XXX: find a better way to wait for X to start
-    sleep 5;
+
+    echo "Exiting (gdm will handle the X server for us)."
+    return 0
 }
 
 function display_manager_start_underneath_xserver () {
@@ -65,7 +68,9 @@ function display_manager_start_underneath_xserver () {
     $GDMDYNAMIC -a 0=XNotHandled
     $GDMDYNAMIC -r 0
     # XXX: find a better way to wait for X to start
-    sleep 5;
+    sleep 5
+
+    return 0
 }
 
 function display_manager_start_seat () {
@@ -105,7 +110,7 @@ function display_manager_start_seat () {
     # dies, it will do a lot of stuff. This way, we won't be able to reconfigure
     # input. We need to find a way to do this, maybe through gdm itself.
     echo "Exiting (gdm will handle the Xephyrs for us)."
-    exit 1;
+    exit 0
 }
 
 function display_manager_stop () {
