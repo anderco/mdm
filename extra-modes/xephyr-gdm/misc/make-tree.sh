@@ -20,7 +20,7 @@
 
 set -e
 
-# XXX This is uglier than ../../mdm/misc/make-tree.s
+# XXX This is uglier than ../../mdm/misc/make-tree.sh
 
 TARGET=tree/
 BASE_DIR=/
