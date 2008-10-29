@@ -3,7 +3,6 @@
 
 CC = gcc
 CFLAGS = -O2 -Wall
-VERSION = 0.0.3
 
 all: tree
 
