@@ -32,5 +32,5 @@ clean:
 	rm -f src/write-message
 	rm -f src/seat-parent-window
 	rm -f po/*.mo
-	rm -rf *tree
+	rm -rf tree
 	rm -rf packages
