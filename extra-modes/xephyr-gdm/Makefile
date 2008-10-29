@@ -9,5 +9,5 @@ tree:
 	@misc/make-tree.sh
 
 clean:
-	rm -rf *tree
+	rm -rf tree
 	rm -rf packages
