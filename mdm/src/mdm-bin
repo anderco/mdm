@@ -71,7 +71,7 @@ function exec_start() {
     display_manager_init
     # check result
     if [ "$?" != "0" ]; then
-       log --log-file-only "Error: failed to initialize `$MULTISEAT_MODE`"
+       log --log-file-only "Error: failed to initialize $MULTISEAT_MODE"
         rm -f $MDM_LOCK_FILE
         exit 1
     fi
