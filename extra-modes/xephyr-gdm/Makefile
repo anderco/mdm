@@ -1,5 +1,3 @@
-VERSION = 0.0.3
-
 all: tree
 
 install: tree

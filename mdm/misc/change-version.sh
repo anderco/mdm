@@ -22,7 +22,4 @@
 
 NEW_VERSION=$1
 
-sed -i "s/^VERSION = .*/VERSION = $1/" Makefile
 sed -i "s/MDM_VERSION=.*/MDM_VERSION='$1'/" src/mdm-common
-sed -i "s/^Version: .*/Version: $1/" distro/debian-lenny/DEBIAN/control
-sed -i "s/^Version: .*/Version: $1/" distro/ubuntu-8.04/DEBIAN/control
