@@ -28,31 +28,21 @@ MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
 source $MDM_INCLUDE
 
 MY_LOG=${MDM_LOGS}/mdm.log
-MDM_LOCK_FILE=/var/lock/mdm.lock
+MY_PIDFILE=${MDM_PIDS}/mdm.pid
 
 CREATE_XORG_CONF=${MDM_SCRIPTS}/create-xorg-conf
 START_SEAT=${MDM_SCRIPTS}/mdm-start-seat
 START_MONOSEAT=${MDM_SCRIPTS}/mdm-start-monoseat
 
 function exec_start() {
-	
+
     log --log-file-only "Multiseat Display Manager version $MDM_VERSION"
-    log --log-file-only "Today is `date`."
-
-    if [ -f "$MDM_LOCK_FILE" ]; then
-        log --log-file-only "Error: mdm is already running"
-	exit 1
-    else
-        touch $MDM_LOCK_FILE
-    fi
-
-    # /var/run is re-created at every reboot
-    mkdir -p ${MDM_RUN}
+    log --log-file-only "Today is $(date)."
 
     if ([ "$RECREATE_XORG_CONF" = 'yes' ] || [ ! -f "$MDM_XORG_CONF" ]); then
 	$CREATE_XORG_CONF
     fi
-	
+
     if [ "$RECONFIGURE_INPUT" = 'yes' ]; then
 	# Removing links AND locks
 	for i in `ls $MDM_DEVICES`; do
@@ -60,7 +50,7 @@ function exec_start() {
 	done
     fi
 
-    VIDEO_CARDS=`$DISCOVER_DEVICES driver | wc -l`
+    VIDEO_CARDS=$($DISCOVER_DEVICES driver | wc -l)
 
     log --log-file-only "$VIDEO_CARDS video cards detected"
 
@@ -71,8 +61,8 @@ function exec_start() {
     display_manager_init
     # check result
     if [ "$?" != "0" ]; then
-       log --log-file-only "Error: failed to initialize $MULTISEAT_MODE"
-        rm -f $MDM_LOCK_FILE
+        log --log-file-only "Error: failed to initialize $MULTISEAT_MODE"
+        exec_stop
         exit 1
     fi
 
@@ -126,49 +116,107 @@ function exec_start() {
 
 function exec_stop() {
 
+    log --log-file-only "Stopping mdm..."
     display_manager_stop
 
-    for i in `ls $MDM_PIDS/*.pid 2> /dev/null`; do
-	rkill `cat $i` 2> /dev/null
+    for i in $(ls $MDM_PIDS/*.pid 2> /dev/null | grep -v mdm.pid); do
+	rkill $(cat $i) 2> /dev/null
 	rm -f $i
     done
 
-    rm -f $MDM_LOCK_FILE
+    rm -f $MY_PIDFILE
 }
 
-function exec_reconfigure() {
-    RECREATE_XORG_CONF='yes'
-    RECONFIGURE_INPUT='yes'
-    exec_stop
+
+function run_service() {
+
+    # /var/run is re-created at every reboot
+    mkdir -p ${MDM_RUN}
+
+    echo $$ > $MY_PIDFILE
+
+    trap exec_stop SIGTERM
+
     exec_start
+
+    # now we sleep until we get a SIGTERM or all our children die
+    wait
+
+    log --log-file-only "All children died. Aborting"
+    exec_stop
+
+    return 0
 }
 
-#####
+function print_help() {
 
-rotate_log $MY_LOG
+    echo "$0 usage:"
+    echo "    $0 [options]"
+    echo "where options include:"
+    echo "    --reconfigure   starts mdm recreating xorg.conf.mdm and"
+    echo "                    reconfiguring input, overwriting values"
+    echo "                    in mdm.conf"
+    echo "    --version       prints mdm's version"
+    echo "    --help          prints this message"
+}
+
+####################
 
 # Check if we're root
-if [ ! "`id -u`" -eq  "0" ]; then
+if [ ! "$(id -u)" -eq  "0" ]; then
     log "ERROR: not running as root user"
     exit 1
 fi
 
-case "$1" in
-    start)
-        exec_start
-        ;;
-    stop)
-        exec_stop
-        ;;
-    restart)
-        exec_stop
-	exec_start
-        ;;
-    reconfigure)
-        exec_reconfigure
-        ;;
-    *)
-        ;;
-esac
+RUNNING_AS_DAEMON=0
 
-exit 0
+while (( $# > 0 )); do
+    case "$1" in
+	--daemon)
+	    RUNNING_AS_DAEMON=1
+	    shift 1
+	    ;;
+        --reconfigure)
+            # overwrite what's written in mdm.conf:
+            RECREATE_XORG_CONF='yes'
+            RECONFIGURE_INPUT='yes'
+	    shift 1
+            ;;
+        --version)
+            echo "$MDM_VERSION"
+            exit 0
+            ;;
+        --help)
+            print_help
+            exit 0
+            ;;
+        *)
+            echo "$0: unrecognized option: '$1'"
+            print_help
+            exit 1
+            ;;
+    esac
+done
+
+# This script needs to run as a daemon, so whenever someone call us (probably
+# from init.d), we'll fork to become a real daemon. Since there is no decent
+# "fork" in bash, we just do "$0 --daemon $@"
+if [ "$RUNNING_AS_DAEMON" = "1" ]; then
+    cd /
+    umask 0
+
+    log --log-file-only "mdm daemon started"
+
+    run_service
+    exit $?
+
+else
+    # Don't rotate log after becomming a daemon
+    rotate_log $MY_LOG
+
+    log --log-file-only "Starting mdm daemon..."
+
+    # Forking, dettaching, closing outputs, etc
+    setsid nohup $0 --daemon $@ &> /dev/null & # Run setsid or nohup first?
+    exit $?
+fi
