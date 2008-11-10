@@ -69,7 +69,7 @@ function load_config() {
 }
 
 function rotate_log () {
-    # Whoever calls this must set the $MY_LOG variable
+    # $1 is the name of the log file
     if [ -f $1 ]; then
         mv $1 $1.old
     fi
