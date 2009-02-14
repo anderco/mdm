@@ -1,4 +1,5 @@
-modesdir = $(datarootdir)/@PACKAGE@/modes
-modes_DATA = template xephyr-xdmcp
+if XEPHYR_GDM
+XEPHYR_GDM_SUBDIRS = xephyr-gdm
+endif
 
-EXTRA_DIST = $(modes_DATA)
+SUBDIRS = default $(XEPHYR_GDM_SUBDIRS)
