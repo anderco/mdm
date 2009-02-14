@@ -4,8 +4,10 @@ AM_INIT_AUTOMAKE([dist-bzip2])
 AC_PROG_CC
 AC_PROG_INSTALL
 
+AM_GNU_GETTEXT([external])
+
 PKG_CHECK_MODULES(MDM, cairo x11)
 AC_SUBST(MDM_CFLAGS)
 AC_SUBST(MDM_LIBS)
 
-AC_OUTPUT([Makefile src/Makefile src/modes/Makefile src/config/Makefile])
+AC_OUTPUT([Makefile src/Makefile src/modes/Makefile src/config/Makefile po/Makefile.in])
