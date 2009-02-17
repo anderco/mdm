@@ -19,6 +19,7 @@ AC_SUBST(MDM_LIBS)
 
 AC_OUTPUT([
 Makefile
+src/mdm-bin
 src/Makefile
 src/modes/Makefile
 src/modes/default/Makefile

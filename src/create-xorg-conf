@@ -23,8 +23,11 @@
 # But they are not enough, so we have to do this...
 # I hope someday X will by default open multiple screens without xorg.conf
 
-MDM_PREFIX=/
-MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
+if [ -z ${MDM_SCRIPTS} ]; then
+    echo "This script should not be called directly."
+    exit 1
+fi
+
 MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
 source $MDM_INCLUDE
 

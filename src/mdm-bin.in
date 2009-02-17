@@ -21,56 +21,32 @@
 # This is the file that is included by everyone. It should cointain all the
 # variables that are common to every function.
 
-source $XRANDR_FUNCTIONS
+MDM_VERSION='@PACKAGE_VERSION@'
 
-function log() {
-    # Whoever calls this must set the $MY_LOG variable!
-    ME=`basename $0`
+prefix=@prefix@
+exec_prefix=@exec_prefix@
 
-    #echo "MY_LOG = $MY_LOG $1 $2"
-    if [ "$1" == '--log-file-only' ]; then
-        echo "$ME: $2" >> $MY_LOG
-    else
-        echo "$ME: $1" >> $MY_LOG
-        echo "$ME: $1"
-    fi
-}
+MDM_PREFIX=${prefix}
 
-function debug() {
-    if [[ "$DEBUG" -eq "1" ]]; then
-	echo "$1"
-    fi
-}
+MDM_LOGS=@localstatedir@/log/mdm
+MDM_RUN=@localstatedir@/run/mdm
+MDM_ETC=@sysconfdir@/mdm
+MDM_SHARE=@datadir@/mdm
+MDM_SCRIPTS=@libdir@/mdm
+MDM_LOCALE=@localedir@
 
-function load_config() {
-    # TODO: we should check for the file integrity and for missing variables
-    source $CONFIG_FILE
-}
+CONFIG_FILE=$MDM_ETC/mdm.conf
 
-function rotate_log () {
-    # $1 is the name of the log file
-    if [ -f $1 ]; then
-        mv $1 $1.old
-    fi
-}
+MDM_DEVICES=$MDM_ETC/devices/
+MDM_MODES=$MDM_SHARE/modes/
+MDM_PIDS=$MDM_RUN/
 
-function select_display_manager () {
-    source $MDM_MODES/$MULTISEAT_MODE
-}
+MDM_XORG_CONF=$MDM_ETC/xorg.conf.mdm
+DISCOVER_DEVICES=$MDM_SCRIPTS/discover-devices
+XRANDR_FUNCTIONS=$MDM_SCRIPTS/xrandr-functions
 
-function rkill()
-{
-   PID=$1
-   CHILDREN=$(ps --ppid $PID |awk 'NR>1{print $1}')
+export MDM_VERSION MDM_PREFIX MDM_LOGS MDM_RUN MDM_ETC MDM_SHARE MDM_SCRIPTS \
+    MDM_LOCALE CONFIG_FILE MDM_DEVICES MDM_MODES MDM_PIDS MDM_XORG_CONF \
+    DISCOVER_DEVICES XRANDR_FUNCTIONS
 
-   kill $PID
-
-   for CHILD in $CHILDREN; do
-       rkill $CHILD
-   done
-}
-
-#####
-
-load_config
-select_display_manager
+$MDM_SCRIPTS/mdm-run

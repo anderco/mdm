@@ -27,8 +27,11 @@
 
 # We assume $DISPLAY is already set here
 
-MDM_PREFIX=/
-MDM_SCRIPTS=${MDM_PREFIX}/usr/sbin
+if [ -z ${MDM_SCRIPTS} ]; then
+    echo "This script should not be called directly."
+    exit 1
+fi
+
 MDM_INCLUDE=${MDM_SCRIPTS}/mdm-common
 source $MDM_INCLUDE
 
