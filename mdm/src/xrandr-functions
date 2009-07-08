@@ -43,8 +43,14 @@ function xrandr_configure_layout () {
     # We hope crtc numbers always start from 0 and increase one by one
     # after changing crtcs, we have to set modes to enable the output
     for (( i=0; i < SCREEN_AMOUNT; i++)); do
-	xrandr --output ${OUTPUT_NAMES[i]} --crtc $i
-	xrandr --output ${OUTPUT_NAMES[i]} --mode ${SCREEN_SIZES[i]}
+        if ((i==0)); then
+            log --log-file-only "crtc e mode"
+            xrandr --output ${OUTPUT_NAMES[i]} --crtc $i --mode ${SCREEN_SIZES[i]}
+        else
+            log --log-file-only "crtc e mode"
+            xrandr --output ${OUTPUT_NAMES[i]} --crtc $i --mode ${SCREEN_SIZES[i]} \
+                   --left-of ${OUTPUT_NAMES[i-1]}
+        fi
     done
 
     for (( i=1; i < SCREEN_AMOUNT; i++)); do
