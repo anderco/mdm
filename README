@@ -79,36 +79,29 @@ Our repository consists of 3 main parts:
 * The ''extra-modes'' directory, which includes the non-default [[multiseat modes]]
 * The '''dependencies''' directory, which includes a patch for libx11. This patch is needed because without it Xephyr will keep randomly dying. You ''can'' use mdm without it, but as soon as your sessions start dying, you'll want this patch. If you don't use Xephyr, you don't need this patch. The patch fixes [https://bugs.freedesktop.org/show_bug.cgi?id=6820 freedesktop.org's bug #6820]
 
-Also, there are 2 ways of compiling each package. One is for the supported distros and other is for the still unsupported distros. Currently the only supported distros are Debian Lenny and Ubuntu 8.04.
-
-===Supported distros===
-
-Set the DISTRO environment variable according to you distribution's name. Current possible values:
-
- export DISTRO=debian-lenny
- export DISTRO=ubuntu-8.04
-
 ====Compiling mdm====
 
 Change to the mdm sub-directory
 
  cd mdm
 
-Generate the package
+Compile the source code
 
- make $DISTRO
+ make
 
-The package will be installed in the newly-created ''packages'' directory. Use your distribution's command to install it. For Debian/Ubuntu:
+Install it to system root (/)
 
- sudo dpkg -i packages/mdm_0.0.2_i386.deb
+ make install
 
-(package version and architecture might change)
+Or, to install to another directory
 
-Go back to the main directory
+ make DESTDIR={target-directory} install
+
+Go back to main directory
 
  cd ..
 
-This way, you will be able to use mdm via XDMCP. If you wish to use gdm:
+This way will allow you to use mdm through XDMCP.
 
 ====Compiling the xephyr-gdm mode====
 
@@ -118,13 +111,15 @@ Change to the xephyr-gdm directory:
 
 Generate the package
 
- make $DISTRO
+ make
 
-The package will be installed in the newly-created ''packages'' directory. Use your distribution's command to install it. For Debian/Ubuntu:
+Install it to system root (/)
 
- sudo dpkg -i packages/mdm_0.0.2_i386.deb
+ make DESTDIR=/ install
 
-(package version and architecture might change)
+Or, if you want another directory
+
+ make DESTDIR={target-directory} install
 
 Go back to the main directory
 
@@ -134,7 +129,7 @@ Go back to the main directory
 
 Change to your distribution's dependencies directory
 
- cd dependencies/$DISTRO
+ cd dependencies/
 
 Install the pre-requisites for recompiling libx11
 
@@ -146,38 +141,6 @@ Then, use this command to compile and install the package:
 
 It will download the sources, apply the patches, and put the libx11-6 package in ''hold'' status.
 
-
-===Still unsupported distros===
-
-====Choose a destination directory====
-
-Instead of inserting the files into the root directory, you'll and to add them somewhere else, like your home directory. Do this:
-
- export DESTDIR=~/mdm-test
-
-Remember: all the files will be here, so [[mdm.conf]] will be located in $DESTDIR/etc/mdm/mdm.conf, not just /etc/mdm/mdm.conf
-
-====Compile the mdm package====
-
- cd mdm
- make DESTDIR=$DESTDIR install
- cd ..
-
-This way, you will be able to use mdm via XDMCP. If you wish to use gdm:
-
-====Compile xephyr-gdm mode====
-
- cd extra-modes/xephyr-gdm
- make DESTDIR=$DESTDIR install
- cd ../..
-
-====Patching libx11-6====
-
- cd dependencies/generic
-
-Apply the patch here to your libx11-6 package and install it
-
- cd ../..
 
 ==Configuring the package==
 
